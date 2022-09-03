@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.tgfd.android.ViewsState
 import ru.tgfd.ui.state.Feed
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.PublicationData
@@ -20,8 +19,8 @@ import kotlin.random.Random
 
 
 @Composable
-internal fun FeedScreen(state: ViewsState.FeedState) {
-    val publications = state.uiState.publications
+internal fun FeedScreen(state: Feed) {
+    val publications = state.publications
     LazyColumn(
         modifier = Modifier.background(Color.White),
         contentPadding = PaddingValues(vertical = 8.dp),
@@ -72,6 +71,5 @@ fun FeedPreview() {
         override fun onLike(publication: PublicationData) {}
 
     }
-    val state = ViewsState.FeedState(feed)
-    FeedScreen(state)
+    FeedScreen(feed)
 }

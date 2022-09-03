@@ -83,7 +83,7 @@ internal class FeedState(
         }
 
         override fun onSelect(publication: PublicationData) {
-            publicationState.updateStateForPublication(publication.id)
+            publicationState.updateStateForPublication(publication)
         }
 
         override fun onLike(publication: PublicationData) {

@@ -18,8 +18,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class TelegramApi(
-    private val context: Context,
-    private val corutineContext: CoroutineScope
+    private val context: Context
 ): AuthorizationApi {
 
     private val TAG = TelegramApi::class.simpleName
@@ -96,7 +95,7 @@ class TelegramApi(
         }
     }
 
-    override suspend fun getChannels() =
+    suspend fun getChannels() =
         suspendCoroutine<List<Channel>> { continuation ->
             client.send(TdApi.GetChats(null, 100)) { result ->
                 val answer = mutableListOf<Channel>()
@@ -121,7 +120,7 @@ class TelegramApi(
             }
         }
 
-    override suspend fun getChannelPosts(
+    suspend fun getChannelPosts(
         channel: Channel,
         limit: Int,
         startMessageId: Long

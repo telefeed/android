@@ -26,6 +26,6 @@ class FeedRepositoryStub : FeedRepository {
 
     override suspend fun getPostComments(postId: Long): List<ChannelPostComment> =
         (0..Random.nextLong(100L)).map { i ->
-            ChannelPostComment(i, Person(i, "person$i"), "comment$i")
+            ChannelPostComment(i, Person(i, "person$i"), "comment$i", 0L)
         }
 }

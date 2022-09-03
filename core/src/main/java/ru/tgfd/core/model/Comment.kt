@@ -1,8 +1,8 @@
 package ru.tgfd.core.model
 
-data class ChannelPostComment(
+data class Comment(
     val id: Long,
-    val author: Person,
     val text: String,
     val timestamp: Long,
+    val author: Channel
 )
