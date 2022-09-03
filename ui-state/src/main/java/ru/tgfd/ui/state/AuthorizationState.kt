@@ -25,7 +25,8 @@ internal class AuthorizationState(
         override fun logout() = this@AuthorizationState.logout()
     }
 
-    private val state = MutableStateFlow<Authorization>(stateUnauthorized)
+    private val _state = MutableStateFlow<Authorization>(stateUnauthorized)
+    val state: StateFlow<Authorization> = _state
 
     init {
         login()
@@ -57,19 +58,19 @@ internal class AuthorizationState(
 
     private fun updateStateByResponse(response: AuthorizationApi.Response): Unit = when (response) {
         AuthorizationApi.Response.WAIT_PHONE -> {
-            state.value = statePhoneRequired
+            _state.value = statePhoneRequired
         }
         AuthorizationApi.Response.WAIT_CODE -> {
-            state.value = stateCodeRequired
+            _state.value = stateCodeRequired
         }
         AuthorizationApi.Response.UNAUTHORIZED -> {
-            state.value = stateUnauthorized
+            _state.value = stateUnauthorized
         }
         AuthorizationApi.Response.AUTHORIZED -> {
-            state.value = stateAuthorized
+            _state.value = stateAuthorized
         }
         AuthorizationApi.Response.ERROR -> {
-            state.value = stateUnauthorized
+            _state.value = stateUnauthorized
         }
     }
 
