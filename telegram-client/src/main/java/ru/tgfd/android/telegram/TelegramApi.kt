@@ -172,9 +172,13 @@ class TelegramApi(
 
     override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
         suspendCoroutine { continuation ->
-            client.send(TdApi.GetMessageThread(channelId, postId)) { result ->
+            val method = TdApi.GetMessageThreadHistory(channelId, postId, 0, 0, 100)
+            client.send(method) { result ->
                 coroutineScope.launch {
-                    result as TdApi.MessageThreadInfo
+                    if (result !is TdApi.Messages) {
+                        continuation.resume(emptyList())
+                        return@launch
+                    }
 
                     val comments = result.messages.mapNotNull { message ->
                         val content = message.content
