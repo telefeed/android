@@ -19,12 +19,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.tgfd.android.R
+import ru.tgfd.android.publication.PostHeader
 import ru.tgfd.ui.state.Feed
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.PublicationData
 import java.util.*
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.hours
 
 
 @Composable
@@ -39,15 +39,12 @@ internal fun FeedScreen(state: Feed) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                border = BorderStroke(1.dp, Color.Gray),
+                    .padding(horizontal = 8.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     PostHeader(item)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(item.text)
                     Spacer(modifier = Modifier.height(8.dp))
                     PostFooter(item)
                 }
@@ -56,65 +53,20 @@ internal fun FeedScreen(state: Feed) {
     }
 }
 
-private fun Long.toStringData(): String {
-    val timeMillis = this
-    val publicationCalendar = Calendar.getInstance().apply {
-        timeInMillis = timeMillis
-    }
-    val dayOfMonth = publicationCalendar.get(Calendar.DAY_OF_MONTH).toTwoDigits()
-    val monthNumber = (publicationCalendar.get(Calendar.MONTH) + 1).toTwoDigits()
-    val hours = publicationCalendar.get(Calendar.HOUR).toTwoDigits()
-    val minutes = publicationCalendar.get(Calendar.MINUTE).toTwoDigits()
-    val year = publicationCalendar.get(Calendar.YEAR)
-    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-    val yearString = if (year != currentYear) ".$year" else ""
-    return "$dayOfMonth.$monthNumber$yearString в $hours:$minutes"
-}
-
-private fun Int.toTwoDigits() = if (this < 10) "0$this" else this.toString()
-
-@Composable
-private fun PostHeader(postData: PublicationData) {
-    Row(
-        modifier = Modifier.padding(PaddingValues(top = 4.dp))
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = "avatar",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape)
-        )
-        Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
-            Text(text = postData.author.name)
-            if (postData.author != postData.originalAuthor) {
-                Text(text = "Переслано от ${postData.originalAuthor.name}")
-            }
-        }
-        Text(
-            text = postData.timestamp.toStringData(),
-            modifier = Modifier.padding(horizontal = 20.dp)
-        )
-    }
-}
-
 @Composable
 private fun PostFooter(postData: PublicationData) {
-    Row(
-        modifier = Modifier.padding(6.dp)
-    ) {
+    Row {
         Image(
-            painter = painterResource(R.drawable.ic_baseline_reply_24),
-            contentDescription = "avatar",
-            contentScale = ContentScale.Crop,
+            painter = painterResource(R.drawable.ic_baseline_mode_comment_24),
+            contentDescription = "comments",
             modifier = Modifier
-                .size(19.dp)
-                .clip(CircleShape)
+                .size(18.dp)
         )
-        Text(text = postData.commentsCounter.toString())
-
+        Text(
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 6.dp),
+            text = postData.commentsCounter.toString()
+        )
     }
 }
 
