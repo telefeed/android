@@ -101,7 +101,7 @@ class TelegramApi(
     }
 
     override suspend fun getChannels(): List<Channel> = suspendCoroutine { continuation ->
-        client.send(TdApi.GetChats(null, 10)) { result ->
+        client.send(TdApi.GetChats(null, 150)) { result ->
             coroutineScope.launch {
                 result as? TdApi.Chats ?: run {
                     continuation.resume(emptyList())
@@ -183,7 +183,7 @@ class TelegramApi(
                             else -> error("unknown senderId type")
                         }
 
-                        ChannelPostComment(
+                        val comment = ChannelPostComment(
                             id = message.id,
                             author = author,
                             text = content.text.text,
