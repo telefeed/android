@@ -19,14 +19,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val backgroundScope = CoroutineScope(Dispatchers.IO)
-        val authorizationApi = TelegramApi(this)
+        val feedRepository = TelegramApi(this, backgroundScope)
         val calendar = object : Calendar {
             override fun now() = java.util.Calendar.getInstance().time.time
         }
-        val repository = FeedFacadeImpl(FeedRepositoryStub(), backgroundScope)
+        val repository = FeedFacadeImpl(feedRepository, backgroundScope)
 
         val uiState = UiState.Builder
-            .api(authorizationApi)
+            .api(feedRepository)
             .scope(backgroundScope)
             .calendar(calendar)
             .repository(repository)

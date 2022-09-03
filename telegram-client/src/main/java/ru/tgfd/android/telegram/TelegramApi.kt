@@ -100,7 +100,7 @@ class TelegramApi(
     }
 
     override suspend fun getChannels(): List<Channel> = suspendCoroutine { continuation ->
-        client.send(TdApi.GetChats(null, 100)) { result ->
+        client.send(TdApi.GetChats(null, 10)) { result ->
             result as? TdApi.Chats ?: run {
                 continuation.resume(emptyList())
                 return@send
