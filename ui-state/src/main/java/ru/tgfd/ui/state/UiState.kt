@@ -1,76 +1,31 @@
 package ru.tgfd.ui.state
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 import ru.tgfd.core.AuthorizationApi
 
-class UiState(
-    private val authorizationApi: AuthorizationApi,
+class UiState private constructor(
+    private val authorizationState: AuthorizationState,
+    private val feedState: FeedState,
     private val coroutineScope: CoroutineScope
 ): StateFlow<State> {
 
-    private val stateUnauthorized = object : Unauthorized {
-        override fun login() = this@UiState.login()
-    }
-    private val statePhoneRequired = object : PhoneRequired {
-        override fun sendPhone(phone: String) = this@UiState.sendPhone(phone)
-    }
-    private val stateCodeRequired = object : CodeRequired {
-        override fun sendCode(code: String) = this@UiState.sendCode(code)
-    }
-    private val stateAuthorized = object : Authorized {
-        override fun logout() = this@UiState.logout()
-    }
-
-    private val state = MutableStateFlow<State>(stateUnauthorized)
-
-    private fun login() {
-        coroutineScope.launch {
-            updateStateByResponse(authorizationApi.login())
-        }
-    }
-
-    private fun sendPhone(phone: String) {
-        coroutineScope.launch {
-            updateStateByResponse(authorizationApi.sendPhone(phone))
-        }
-    }
-
-    private fun sendCode(code: String) {
-        coroutineScope.launch {
-            updateStateByResponse(authorizationApi.sendCode(code))
-        }
-    }
-
-    private fun logout() {
-        coroutineScope.launch {
-            updateStateByResponse(authorizationApi.logout())
-        }
-    }
-
-    private fun updateStateByResponse(response: AuthorizationApi.Response): Unit = when (response) {
-        AuthorizationApi.Response.WAIT_PHONE -> {
-            state.value = statePhoneRequired
-        }
-        AuthorizationApi.Response.WAIT_CODE -> {
-            state.value = stateCodeRequired
-        }
-        AuthorizationApi.Response.UNAUTHORIZED -> {
-            state.value = stateUnauthorized
-        }
-        AuthorizationApi.Response.AUTHORIZED -> {
-            state.value = stateAuthorized
-        }
-        AuthorizationApi.Response.ERROR -> {
-            state.value = stateUnauthorized
-        }
-    }
+    private val state = MutableStateFlow<State>(authorizationState.value)
 
     override val replayCache: List<State>
         get() = state.replayCache
+
+    init {
+        combine(authorizationState, feedState) { authorization, feed ->
+            state.update {
+                if (authorization is Authorized) {
+                    feed
+                } else {
+                    authorization
+                }
+            }
+        }.launchIn(coroutineScope)
+    }
 
     override suspend fun collect(
         collector: FlowCollector<State>
@@ -78,4 +33,23 @@ class UiState(
 
     override val value: State
         get() = state.value
+
+    companion object Builder {
+        private lateinit var coroutineScope: CoroutineScope
+        private lateinit var authorizationApi: AuthorizationApi
+
+        fun scope(scope: CoroutineScope) = apply {
+            coroutineScope = scope
+        }
+
+        fun api(api: AuthorizationApi) = apply {
+            authorizationApi = api
+        }
+
+        fun build(): UiState = UiState(
+            authorizationState = AuthorizationState(authorizationApi, coroutineScope),
+            feedState = FeedState(coroutineScope),
+            coroutineScope = coroutineScope
+        )
+    }
 }

@@ -4,23 +4,25 @@ import ru.tgfd.ui.state.data.Publication
 
 sealed interface State
 
-interface Unauthorized: State {
+sealed interface Authorization: State
+
+interface Unauthorized: Authorization {
     fun login()
 }
 
-interface PhoneRequired: State {
+interface PhoneRequired: Authorization {
     fun sendPhone(phone: String)
 }
 
-interface CodeRequired: State {
+interface CodeRequired: Authorization {
     fun sendCode(code: String)
 }
 
-interface Authorized: State {
+interface Authorized: Authorization {
     fun logout()
 }
 
-interface FeedState: State {
+interface Feed: State {
     val publications: List<Publication>
 
     fun loadNew()

@@ -25,16 +25,18 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.mainactivity)
 
         val authorizationApi = TelegramAuthorizationApi(this)
-        val authorization = UiState(
-            authorizationApi, lifecycleScope
-        )
-        authorization.onEach { state ->
+        val uiState = UiState.Builder
+            .api(authorizationApi)
+            .scope(lifecycleScope)
+            .build()
+
+        uiState.onEach { state ->
             when (state) {
                 is Authorized -> onAuthorized(state)
                 is CodeRequired -> onCodeRequired(state)
                 is PhoneRequired -> onPhoneRequired(state)
                 is Unauthorized -> onUnauthorized(state)
-                is FeedState -> TODO()
+                is Feed -> onAuthorized(state)
             }
         }.launchIn(lifecycleScope)
     }
@@ -75,5 +77,10 @@ class MainActivity : ComponentActivity() {
             state.login()
         }
         button.text = "Войти"
+    }
+
+    private fun onAuthorized(state: Feed) {
+        button.isVisible = false
+        editText.isVisible = false
     }
 }
