@@ -166,7 +166,7 @@ class TelegramApi(
     }
 
     override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
-        suspendCoroutine {
+        suspendCoroutine { continuation ->
             client.send(TdApi.GetMessageThread(channelId, postId)) { result ->
                 coroutineScope.launch {
                     result as TdApi.MessageThreadInfo
@@ -183,7 +183,7 @@ class TelegramApi(
                             else -> error("unknown senderId type")
                         }
 
-                        val comment = ChannelPostComment(
+                        ChannelPostComment(
                             id = message.id,
                             author = author,
                             text = content.text.text,
@@ -191,7 +191,7 @@ class TelegramApi(
                         )
                     }
 
-                    it.resume(comments)
+                    continuation.resume(comments)
                 }
             }
         }
