@@ -7,22 +7,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.tgfd.core.AuthorizationApi
 
-class TelegramAuthorization(
+class UiState(
     private val authorizationApi: AuthorizationApi,
     private val coroutineScope: CoroutineScope
 ): StateFlow<State> {
 
     private val stateUnauthorized = object : Unauthorized {
-        override fun login() = this@TelegramAuthorization.login()
+        override fun login() = this@UiState.login()
     }
     private val statePhoneRequired = object : PhoneRequired {
-        override fun sendPhone(phone: String) = this@TelegramAuthorization.sendPhone(phone)
+        override fun sendPhone(phone: String) = this@UiState.sendPhone(phone)
     }
     private val stateCodeRequired = object : CodeRequired {
-        override fun sendCode(code: String) = this@TelegramAuthorization.sendCode(code)
+        override fun sendCode(code: String) = this@UiState.sendCode(code)
     }
     private val stateAuthorized = object : Authorized {
-        override fun logout() = this@TelegramAuthorization.logout()
+        override fun logout() = this@UiState.logout()
     }
 
     private val state = MutableStateFlow<State>(stateUnauthorized)

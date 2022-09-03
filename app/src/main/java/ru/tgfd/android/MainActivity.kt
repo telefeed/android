@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.mainactivity)
 
         val authorizationApi = TelegramAuthorizationApi(this)
-        val authorization = TelegramAuthorization(
+        val authorization = UiState(
             authorizationApi, lifecycleScope
         )
         authorization.onEach { state ->
@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
                 is CodeRequired -> onCodeRequired(state)
                 is PhoneRequired -> onPhoneRequired(state)
                 is Unauthorized -> onUnauthorized(state)
+                is FeedState -> TODO()
             }
         }.launchIn(lifecycleScope)
     }
