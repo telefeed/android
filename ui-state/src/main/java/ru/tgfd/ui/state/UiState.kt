@@ -3,11 +3,13 @@ package ru.tgfd.ui.state
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import ru.tgfd.core.AuthorizationApi
+import ru.tgfd.core.Calendar
+import ru.tgfd.core.Repository
 
 class UiState private constructor(
-    private val authorizationState: AuthorizationState,
-    private val feedState: FeedState,
-    private val coroutineScope: CoroutineScope
+    authorizationState: AuthorizationState,
+    feedState: FeedState,
+    coroutineScope: CoroutineScope
 ): StateFlow<State> {
 
     private val state = MutableStateFlow<State>(authorizationState.value)
@@ -37,6 +39,8 @@ class UiState private constructor(
     companion object Builder {
         private lateinit var coroutineScope: CoroutineScope
         private lateinit var authorizationApi: AuthorizationApi
+        private lateinit var messagesRepository: Repository
+        private lateinit var calendar: Calendar
 
         fun scope(scope: CoroutineScope) = apply {
             coroutineScope = scope
@@ -46,10 +50,24 @@ class UiState private constructor(
             authorizationApi = api
         }
 
-        fun build(): UiState = UiState(
-            authorizationState = AuthorizationState(authorizationApi, coroutineScope),
-            feedState = FeedState(coroutineScope),
-            coroutineScope = coroutineScope
-        )
+        fun repository(repository: Repository) = apply {
+            messagesRepository = repository
+        }
+
+        fun calendar(calendar: Calendar) = apply {
+            this.calendar = calendar
+        }
+
+        fun build(): UiState {
+            val authorizationState = AuthorizationState(authorizationApi, coroutineScope)
+            val feedState = FeedState(
+                messagesRepository,
+                authorizationState,
+                calendar,
+                coroutineScope
+            )
+
+            return UiState(authorizationState, feedState, coroutineScope)
+        }
     }
 }
