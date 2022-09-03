@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val state by uiState.collectAsState()
-            MainScreen(uiState = state)
+            MainScreen(state = state)
         }
     }
 }
