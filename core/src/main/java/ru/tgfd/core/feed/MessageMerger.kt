@@ -1,9 +1,9 @@
-package ru.tgfd.core.merging
+package ru.tgfd.core.feed
 
 import ru.tgfd.core.model.Message
 import java.util.*
 
-class MessagesMerger {
+internal object MessageMerger {
     /**
      * Merge messages into single timeline.
      *

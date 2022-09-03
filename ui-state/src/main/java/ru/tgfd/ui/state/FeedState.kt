@@ -4,13 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.tgfd.core.Calendar
-import ru.tgfd.core.Repository
+import ru.tgfd.core.feed.FeedFacade
 import ru.tgfd.core.model.Message
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.PublicationData
 
 internal class FeedState(
-    private val messagesRepository: Repository,
+    private val messagesRepository: FeedFacade,
     private val authorizationState: AuthorizationState,
     private val publicationState: PublicationState,
     private val calendar: Calendar,

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import ru.tgfd.core.AuthorizationApi
+import ru.tgfd.core.auth.AuthorizationApi
 
 internal class AuthorizationState(
     private val authorizationApi: AuthorizationApi,

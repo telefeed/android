@@ -2,9 +2,9 @@ package ru.tgfd.ui.state
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
-import ru.tgfd.core.AuthorizationApi
+import ru.tgfd.core.auth.AuthorizationApi
 import ru.tgfd.core.Calendar
-import ru.tgfd.core.Repository
+import ru.tgfd.core.feed.FeedFacade
 
 class UiState private constructor(
     authorizationState: AuthorizationState,
@@ -44,7 +44,7 @@ class UiState private constructor(
     companion object Builder {
         private lateinit var coroutineScope: CoroutineScope
         private lateinit var authorizationApi: AuthorizationApi
-        private lateinit var messagesRepository: Repository
+        private lateinit var messagesRepository: FeedFacade
         private lateinit var calendar: Calendar
 
         fun scope(scope: CoroutineScope) = apply {
@@ -55,7 +55,7 @@ class UiState private constructor(
             authorizationApi = api
         }
 
-        fun repository(repository: Repository) = apply {
+        fun repository(repository: FeedFacade) = apply {
             messagesRepository = repository
         }
 

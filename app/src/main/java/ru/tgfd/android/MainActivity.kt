@@ -9,8 +9,8 @@ import androidx.lifecycle.lifecycleScope
 import ru.tgfd.android.telegram.TelegramAuthorizationApi
 import ru.tgfd.ui.state.UiState
 import ru.tgfd.core.Calendar
-import ru.tgfd.core.Repository
-import ru.tgfd.core.model.Message
+import ru.tgfd.core.feed.FeedFacadeImpl
+import ru.tgfd.core.feed.FeedRepositoryStub
 
 class MainActivity : ComponentActivity() {
 
@@ -21,9 +21,8 @@ class MainActivity : ComponentActivity() {
         val calendar = object : Calendar {
             override fun now() = java.util.Calendar.getInstance().time.time
         }
-        val repository = object : Repository {
-            override suspend fun getMessages(timestamp: Long) = emptyList<Message>()
-        }
+        val repository = FeedFacadeImpl(FeedRepositoryStub(), lifecycleScope)
+
         val uiState = UiState.Builder
             .api(authorizationApi)
             .scope(lifecycleScope)

@@ -5,7 +5,7 @@ import android.os.Build
 import android.util.Log
 import org.drinkless.td.libcore.telegram.Client
 import org.drinkless.td.libcore.telegram.TdApi
-import ru.tgfd.core.AuthorizationApi
+import ru.tgfd.core.auth.AuthorizationApi
 import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
