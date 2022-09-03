@@ -1,6 +1,6 @@
 package ru.tgfd.ui.state
 
-import ru.tgfd.ui.state.data.Publication
+import ru.tgfd.ui.state.data.PublicationData
 
 sealed interface State
 
@@ -23,11 +23,18 @@ interface Authorized: Authorization {
 }
 
 interface Feed: State {
-    val publications: List<Publication>
+    val publications: List<PublicationData>
 
     fun loadNew()
     fun loadOld()
 
-    fun onSelect(publication: Publication)
-    fun onLike(publication: Publication)
+    fun onSelect(publication: PublicationData)
+    fun onLike(publication: PublicationData)
+}
+
+interface Publication: State {
+    val data: PublicationData
+
+    fun onLike()
+    fun onClose()
 }

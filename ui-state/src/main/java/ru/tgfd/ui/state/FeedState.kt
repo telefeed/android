@@ -7,11 +7,12 @@ import ru.tgfd.core.Calendar
 import ru.tgfd.core.Repository
 import ru.tgfd.core.model.Message
 import ru.tgfd.ui.state.data.Author
-import ru.tgfd.ui.state.data.Publication
+import ru.tgfd.ui.state.data.PublicationData
 
 internal class FeedState(
     private val messagesRepository: Repository,
     private val authorizationState: AuthorizationState,
+    private val publicationState: PublicationState,
     private val calendar: Calendar,
     private val coroutineScope: CoroutineScope
 ): StateFlow<Feed> {
@@ -38,7 +39,7 @@ internal class FeedState(
         state.update { currentState ->
             val currentPublications = currentState.publications
             val newPublications = messages.map { message ->
-                Publication(
+                PublicationData(
                     id = message.id,
                     author = Author(message.channel.title, ""),
                     originalAuthor = Author(message.channel.title, ""),
@@ -63,15 +64,12 @@ internal class FeedState(
     }
 
     private inner class InternalFeedState(
-        override val publications: List<Publication>
+        override val publications: List<PublicationData>
     ): Feed {
 
         override fun loadNew() {
             coroutineScope.launch {
-                val firstPublication = publications.getOrNull(0)
-                val firstPublicationTimestamp = firstPublication?.timestamp ?: calendar.now()
-
-                updateState(messagesRepository.getMessages(firstPublicationTimestamp))
+                updateState(messagesRepository.getMessages(calendar.now()))
             }
         }
 
@@ -84,11 +82,11 @@ internal class FeedState(
             }
         }
 
-        override fun onSelect(publication: Publication) {
-            TODO("Not yet implemented")
+        override fun onSelect(publication: PublicationData) {
+            publicationState.updateStateForPublication(publication.id)
         }
 
-        override fun onLike(publication: Publication) {
+        override fun onLike(publication: PublicationData) {
             TODO("Not yet implemented")
         }
     }

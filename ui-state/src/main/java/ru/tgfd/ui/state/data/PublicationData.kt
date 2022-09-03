@@ -1,6 +1,6 @@
 package ru.tgfd.ui.state.data
 
-data class Publication(
+data class PublicationData(
     val id: Long,
     val author: Author,
     val originalAuthor: Author,

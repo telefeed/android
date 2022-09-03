@@ -21,6 +21,7 @@ fun MainScreen(authorization: State) {
         is PhoneRequired -> ViewsState.PhoneRequired(authorization::sendPhone)
         is Unauthorized -> ViewsState.UnathorizedState(authorization::login)
         is Feed -> ViewsState.Feed
+        is Publication -> TODO()
     }
     Column {
         with(viewsState.editTextState) {

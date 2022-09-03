@@ -9,6 +9,7 @@ import ru.tgfd.core.Repository
 class UiState private constructor(
     authorizationState: AuthorizationState,
     feedState: FeedState,
+    publicationState: PublicationState,
     coroutineScope: CoroutineScope
 ): StateFlow<State> {
 
@@ -18,12 +19,16 @@ class UiState private constructor(
         get() = state.replayCache
 
     init {
-        combine(authorizationState, feedState) { authorization, feed ->
+        combine(
+            authorizationState,
+            feedState,
+            publicationState
+        ) { authorization, feed, publication ->
             state.update {
-                if (authorization is Authorized) {
-                    feed
-                } else {
-                    authorization
+                when {
+                    authorization !is Authorized -> authorization
+                    publication != null -> publication
+                    else -> feed
                 }
             }
         }.launchIn(coroutineScope)
@@ -60,14 +65,16 @@ class UiState private constructor(
 
         fun build(): UiState {
             val authorizationState = AuthorizationState(authorizationApi, coroutineScope)
+            val publicationState = PublicationState(coroutineScope)
             val feedState = FeedState(
                 messagesRepository,
                 authorizationState,
+                publicationState,
                 calendar,
                 coroutineScope
             )
 
-            return UiState(authorizationState, feedState, coroutineScope)
+            return UiState(authorizationState, feedState, publicationState, coroutineScope)
         }
     }
 }
