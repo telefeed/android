@@ -3,6 +3,8 @@ package ru.tgfd.android.telegram
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.Client
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.ChatTypeSupergroup
@@ -14,14 +16,13 @@ import ru.tgfd.core.model.ChannelPostComment
 import ru.tgfd.core.model.Person
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.random.Random
 
 class TelegramApi(
-    private val context: Context
+    private val context: Context,
+    private val coroutineScope: CoroutineScope
 ) : AuthorizationApi, FeedRepository {
 
     private val TAG = TelegramApi::class.simpleName
@@ -163,28 +164,57 @@ class TelegramApi(
     override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
         suspendCoroutine {
             client.send(TdApi.GetMessageThread(channelId, postId)) { result ->
-                result as TdApi.MessageThreadInfo
-                result.messages.mapNotNull { message ->
-                    val content = message.content
-                    if (content !is TdApi.MessageText) {
-                        return@mapNotNull null
+                coroutineScope.launch {
+                    result as TdApi.MessageThreadInfo
+
+                    result.messages.mapNotNull { message ->
+                        val content = message.content
+                        if (content !is TdApi.MessageText) {
+                            return@mapNotNull null
+                        }
+
+                        val author = when (val senderId = message.senderId) {
+                            is TdApi.MessageSenderUser -> getUser(senderId.userId)
+                            is TdApi.MessageSenderChat -> getUserAsChat(senderId.chatId)
+                            else -> error("unknown senderId type")
+                        }
+
+                        ChannelPostComment(
+                            id = message.id,
+                            author = author,
+                            text = content.text.text,
+                            timestamp = message.date.toLong()
+                        )
                     }
-
-                    // TODO: proper author fetch
-                    val author = Person(
-                        id = Random.nextLong(),
-                        name = message.authorSignature
-                    )
-
-                    ChannelPostComment(
-                        id = message.id,
-                        author = author,
-                        text = content.text.text,
-                        timestamp = message.date.toLong()
-                    )
                 }
             }
         }
+
+    private suspend fun getUser(userId: Long): Person = suspendCoroutine { continuation ->
+        client.send(TdApi.GetUser(userId)) { result ->
+            result as TdApi.User
+
+            val person = Person(
+                id = result.id,
+                name = result.firstName + result.lastName
+            )
+
+            continuation.resume(person)
+        }
+    }
+
+    private suspend fun getUserAsChat(chatId: Long): Person = suspendCoroutine { continuation ->
+        client.send(TdApi.GetChat(chatId)) { result ->
+            result as TdApi.Chat
+
+            val person = Person(
+                id = result.id,
+                name = result.title
+            )
+
+            continuation.resume(person)
+        }
+    }
 
 
     private fun onAuthorizationStateUpdated(authorizationState: TdApi.AuthorizationState) {
