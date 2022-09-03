@@ -22,7 +22,7 @@ class FeedRepositoryStub : FeedRepository {
                 ),
                 channel = Channel(id = channelId, title = "channel$channelId")
             )
-        }
+        }.sortedByDescending { it.timestamp }
 
     override suspend fun getPostComments(postId: Long): List<ChannelPostComment> =
         (0..Random.nextLong(100L)).map { i ->
