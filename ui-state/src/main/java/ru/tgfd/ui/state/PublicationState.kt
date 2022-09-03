@@ -20,13 +20,13 @@ internal class PublicationState(
 
     fun updateStateForPublication(publicationData: PublicationData) {
         coroutineScope.launch {
-            val comments = feedFacade.getComments(publicationData.id)
+            val comments = feedFacade.getPostComments(publicationData.id)
 
             state.update {
                 object : Publication {
                     override val data = publicationData
                     override val comments = comments.map {
-                        CommentData(it.text, it.timestamp, Author(it.author.title, ""))
+                        CommentData(it.text, it.timestamp, Author(it.author.name, ""))
                     }
 
                     override fun onLike() {
