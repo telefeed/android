@@ -43,7 +43,7 @@ internal class FeedState(
                     author = Author(message.channel.title, ""),
                     originalAuthor = Author(message.channel.title, ""),
                     text = message.text,
-                    timestamp = message.time,
+                    timestamp = message.timestamp,
                     imagesUrls = emptyList(),
                     likesCounter = 0L,
                     commentsCounter = 0L,
