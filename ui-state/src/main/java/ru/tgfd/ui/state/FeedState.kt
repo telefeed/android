@@ -41,6 +41,7 @@ internal class FeedState(
             val newPublications = messages.map { message ->
                 PublicationData(
                     id = message.id,
+                    channelId = message.channel.id,
                     author = Author(message.channel.title, ""),
                     originalAuthor = Author(message.channel.title, ""),
                     text = message.text,

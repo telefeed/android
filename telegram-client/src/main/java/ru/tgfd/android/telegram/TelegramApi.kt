@@ -3,23 +3,25 @@ package ru.tgfd.android.telegram
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import kotlinx.coroutines.CoroutineScope
 import org.drinkless.td.libcore.telegram.Client
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.ChatTypeSupergroup
-import org.drinkless.td.libcore.telegram.TdApi.MessageText
 import ru.tgfd.core.auth.AuthorizationApi
+import ru.tgfd.core.feed.FeedRepository
 import ru.tgfd.core.model.Channel
 import ru.tgfd.core.model.ChannelPost
+import ru.tgfd.core.model.ChannelPostComment
+import ru.tgfd.core.model.Person
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.random.Random
 
 class TelegramApi(
     private val context: Context
-): AuthorizationApi {
+) : AuthorizationApi, FeedRepository {
 
     private val TAG = TelegramApi::class.simpleName
     private val TDLIB_PARAMETERS = TdApi.TdlibParameters().apply {
@@ -95,53 +97,87 @@ class TelegramApi(
         }
     }
 
-    suspend fun getChannels() =
-        suspendCoroutine<List<Channel>> { continuation ->
-            client.send(TdApi.GetChats(null, 100)) { result ->
-                val answer = mutableListOf<Channel>()
-                val listId = (result as? TdApi.Chats)?.chatIds ?: LongArray(0)
-                val countDone = AtomicInteger(0)
-                for (id in listId) {
-                    client.send(TdApi.GetChat(id)) {
-                        val chat = it as TdApi.Chat
-                        if (chat.type.constructor == ChatTypeSupergroup.CONSTRUCTOR &&
-                            (chat.type as ChatTypeSupergroup).isChannel
-                        ) {
-                            synchronized(answer) {
-                                answer.add(Channel(id, chat.title))
-                            }
-                        }
-                        if (countDone.addAndGet(1) == listId.size) {
-                            continuation.resume(answer)
+    override suspend fun getChannels(): List<Channel> = suspendCoroutine { continuation ->
+        client.send(TdApi.GetChats(null, 100)) { result ->
+            val answer = mutableListOf<Channel>()
+            val listId = (result as? TdApi.Chats)?.chatIds ?: LongArray(0)
+            val countDone = AtomicInteger(0)
+            for (id in listId) {
+                client.send(TdApi.GetChat(id)) {
+                    val chat = it as TdApi.Chat
+                    if (chat.type.constructor == ChatTypeSupergroup.CONSTRUCTOR &&
+                        (chat.type as ChatTypeSupergroup).isChannel
+                    ) {
+                        synchronized(answer) {
+                            answer.add(Channel(id, chat.title))
                         }
                     }
+                    if (countDone.addAndGet(1) == listId.size) {
+                        continuation.resume(answer)
+                    }
                 }
-                if (listId.isEmpty()) continuation.resume(answer)
             }
+            if (listId.isEmpty()) continuation.resume(answer)
         }
+    }
 
-    suspend fun getChannelPosts(
+    override suspend fun getChannelPosts(
         channel: Channel,
         limit: Int,
         startMessageId: Long
-    ) = suspendCoroutine<List<ChannelPost>> { continuation ->
-        client.send(TdApi.GetChatHistory(channel.id, startMessageId, 0, limit, false)) {
-            val messages = (it as TdApi.Messages).messages
-            continuation.resume(messages.filter { it.isChannelPost }
-                .filter {
-                    it.content.constructor == MessageText.CONSTRUCTOR ||
-                            it.content.constructor == TdApi.MessagePhoto.CONSTRUCTOR
-                }.map {
-                    val content = it.content
-                    val text = if (content is TdApi.MessagePhoto) {
-                        content.caption.text
-                    }else {
-                        (content as MessageText).text.text
+    ): List<ChannelPost> = suspendCoroutine { continuation ->
+        val method = TdApi.GetChatHistory(channel.id, startMessageId, 0, limit, false)
+        client.send(method) { result ->
+            result as TdApi.Messages
+
+            val messages = result.messages
+                .filter { it.isChannelPost }
+                .filter { it.content is TdApi.MessageText || it.content is TdApi.MessagePhoto }
+                .map { message ->
+                    val text = when (val content = message.content) {
+                        is TdApi.MessagePhoto -> content.caption.text
+                        is TdApi.MessageText -> content.text.text
+                        else -> error("unreachable")
                     }
-                    ChannelPost(it.id, text, it.date.toLong(), channel)
-                })
+
+                    ChannelPost(
+                        id = message.id,
+                        text = text,
+                        timestamp = message.date.toLong(),
+                        channel = channel
+                    )
+                }
+
+            continuation.resume(messages)
         }
     }
+
+    override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
+        suspendCoroutine {
+            client.send(TdApi.GetMessageThread(channelId, postId)) { result ->
+                result as TdApi.MessageThreadInfo
+                result.messages.mapNotNull { message ->
+                    val content = message.content
+                    if (content !is TdApi.MessageText) {
+                        return@mapNotNull null
+                    }
+
+                    // TODO: proper author fetch
+                    val author = Person(
+                        id = Random.nextLong(),
+                        name = message.authorSignature
+                    )
+
+                    ChannelPostComment(
+                        id = message.id,
+                        author = author,
+                        text = content.text.text,
+                        timestamp = message.date.toLong()
+                    )
+                }
+            }
+        }
+
 
     private fun onAuthorizationStateUpdated(authorizationState: TdApi.AuthorizationState) {
         when (authorizationState.constructor) {

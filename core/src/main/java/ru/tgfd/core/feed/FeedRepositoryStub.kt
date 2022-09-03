@@ -11,20 +11,24 @@ class FeedRepositoryStub : FeedRepository {
         Channel(id = id, title = "channel$id")
     }
 
-    override suspend fun getChannelPosts(channelId: Long, limit: Int, offset: Int): List<ChannelPost> =
+    override suspend fun getChannelPosts(
+        channel: Channel,
+        limit: Int,
+        startMessageId: Long
+    ): List<ChannelPost> =
         (1..50L).map { i ->
             ChannelPost(
                 id = Random.nextLong(),
-                text = "channel$channelId post$i",
+                text = "channel${channel.id} post$i",
                 timestamp = Random.nextLong(
                     1640984400,  // 1 January 2022 12:00 AM
                     1661979600   // 1 September 2022 12:00 AM
                 ),
-                channel = Channel(id = channelId, title = "channel$channelId")
+                channel = channel
             )
         }.sortedByDescending { it.timestamp }
 
-    override suspend fun getPostComments(postId: Long): List<ChannelPostComment> =
+    override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
         (0..Random.nextLong(100L)).map { i ->
             ChannelPostComment(i, Person(i, "person$i"), "comment$i", 0L)
         }

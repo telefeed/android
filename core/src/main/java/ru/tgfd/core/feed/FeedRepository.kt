@@ -6,6 +6,12 @@ import ru.tgfd.core.model.ChannelPostComment
 
 interface FeedRepository {
     suspend fun getChannels(): List<Channel>
-    suspend fun getChannelPosts(channelId: Long, limit: Int = 0, offset: Int = 0): List<ChannelPost>
-    suspend fun getPostComments(postId: Long): List<ChannelPostComment>
+
+    suspend fun getChannelPosts(
+        channel: Channel,
+        limit: Int = 0,
+        startMessageId: Long = 0
+    ): List<ChannelPost>
+
+    suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment>
 }

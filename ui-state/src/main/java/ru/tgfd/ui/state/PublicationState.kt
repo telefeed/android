@@ -20,7 +20,7 @@ internal class PublicationState(
 
     fun updateStateForPublication(publicationData: PublicationData) {
         coroutineScope.launch {
-            val comments = feedFacade.getPostComments(publicationData.id)
+            val comments = feedFacade.getPostComments(publicationData.channelId, publicationData.id)
 
             state.update {
                 object : Publication {

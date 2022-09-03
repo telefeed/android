@@ -5,5 +5,5 @@ import ru.tgfd.core.model.ChannelPostComment
 
 interface FeedFacade {
     suspend fun getPosts(timestamp: Long, limit: Int = 10): List<ChannelPost>
-    suspend fun getPostComments(postId: Long): List<ChannelPostComment>
+    suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment>
 }

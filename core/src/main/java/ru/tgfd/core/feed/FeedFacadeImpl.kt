@@ -12,7 +12,7 @@ class FeedFacadeImpl(
         val channels = feedRepository.getChannels()
         val deferredPosts = channels.map { channel ->
             coroutineScope.async {
-                feedRepository.getChannelPosts(channel.id, limit)
+                feedRepository.getChannelPosts(channel, limit)
             }
         }
 
@@ -25,6 +25,6 @@ class FeedFacadeImpl(
             .toList()
     }
 
-    override suspend fun getPostComments(postId: Long): List<ChannelPostComment> =
-        feedRepository.getPostComments(postId)
+    override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
+        feedRepository.getPostComments(channelId, postId)
 }
