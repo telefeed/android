@@ -13,6 +13,7 @@ import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.core.model.ChannelPostComment
 import ru.tgfd.core.model.Person
 import java.util.*
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -99,25 +100,32 @@ class TelegramApi(
 
     override suspend fun getChannels(): List<Channel> = suspendCoroutine { continuation ->
         client.send(TdApi.GetChats(null, 100)) { result ->
-            val answer = mutableListOf<Channel>()
-            val listId = (result as? TdApi.Chats)?.chatIds ?: LongArray(0)
-            val countDone = AtomicInteger(0)
-            for (id in listId) {
-                client.send(TdApi.GetChat(id)) {
-                    val chat = it as TdApi.Chat
-                    if (chat.type.constructor == ChatTypeSupergroup.CONSTRUCTOR &&
-                        (chat.type as ChatTypeSupergroup).isChannel
-                    ) {
-                        synchronized(answer) {
-                            answer.add(Channel(id, chat.title))
-                        }
-                    }
-                    if (countDone.addAndGet(1) == listId.size) {
-                        continuation.resume(answer)
-                    }
-                }
+            result as? TdApi.Chats ?: run {
+                continuation.resume(emptyList())
+                return@send
             }
-            if (listId.isEmpty()) continuation.resume(answer)
+
+            val chatIds = result.chatIds
+            val latch = CountDownLatch(chatIds.size)
+            val channelList = Collections.synchronizedList(mutableListOf<Channel>())
+
+            chatIds.forEach { id ->
+                client.send(TdApi.GetChat(id)) getChat@{ chat ->
+                    chat as TdApi.Chat
+
+                    val type = chat.type
+                    if (type !is ChatTypeSupergroup || !type.isChannel) {
+                        return@getChat
+                    }
+
+                    val channel = Channel(id, chat.title)
+                    channelList.add(channel)
+                    latch.countDown()
+                }
+
+                latch.await()
+                continuation.resume(channelList.toList())
+            }
         }
     }
 
