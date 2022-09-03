@@ -12,7 +12,7 @@ import ru.tgfd.ui.state.State
 fun MainScreen(uiState: State) {
     when(val viewsState = ViewsState(uiState)) {
         is ViewsState.AuthorizationState -> AuthScreen(viewsState)
-        is ViewsState.FeedState -> FeedScreen()
+        is ViewsState.FeedState -> FeedScreen(viewsState)
         is ViewsState.PublicationState -> TODO()
     }
 }
