@@ -1,6 +1,6 @@
 package ru.tgfd.core.model
 
-data class Message(
+data class ChannelPost(
     val id: Long,
     val text: String,
     val timestamp: Long,

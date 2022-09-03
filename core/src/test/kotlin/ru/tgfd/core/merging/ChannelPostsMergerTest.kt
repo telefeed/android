@@ -7,13 +7,14 @@ import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.long
 import io.kotest.property.checkAll
+import ru.tgfd.core.feed.ChannelPostsMerger
 import ru.tgfd.core.model.Channel
-import ru.tgfd.core.model.Message
+import ru.tgfd.core.model.ChannelPost
 
-class MessageMergerTest : FreeSpec({
+class ChannelPostsMergerTest : FreeSpec({
     val messageGenerator = arbitrary {
         val timestamp = Arb.long(0L..100L).bind()
-        Message(
+        ChannelPost(
             id = 0,
             text = "$timestamp",
             timestamp = timestamp,
@@ -21,12 +22,10 @@ class MessageMergerTest : FreeSpec({
         )
     }
 
-    val merger = MessagesMerger()
-
     "check merger works correctly" {
         checkAll(Arb.list(Arb.list(messageGenerator, 20..30), 25..50)) { channels ->
             val sortedChannels = channels.map { channel -> channel.sortedByDescending { it.timestamp } }
-            merger.merge(sortedChannels).shouldBeSortedBy { -it.timestamp }
+            ChannelPostsMerger.merge(sortedChannels).shouldBeSortedBy { -it.timestamp }
         }
     }
 })

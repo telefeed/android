@@ -5,12 +5,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.tgfd.core.Calendar
 import ru.tgfd.core.feed.FeedFacade
-import ru.tgfd.core.model.Message
+import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.PublicationData
 
 internal class FeedState(
-    private val messagesRepository: FeedFacade,
+    private val postsRepository: FeedFacade,
     private val authorizationState: AuthorizationState,
     private val publicationState: PublicationState,
     private val calendar: Calendar,
@@ -21,7 +21,7 @@ internal class FeedState(
 
     init {
         authorizationState.filterIsInstance<Authorized>().onEach {
-            updateState(messagesRepository.getMessages(calendar.now()))
+            updateState(postsRepository.getPosts(calendar.now()))
         }.launchIn(coroutineScope)
     }
 
@@ -35,7 +35,7 @@ internal class FeedState(
     override val value: Feed
         get() = state.value
 
-    private fun updateState(messages: List<Message>) {
+    private fun updateState(messages: List<ChannelPost>) {
         state.update { currentState ->
             val currentPublications = currentState.publications
             val newPublications = messages.map { message ->
@@ -69,7 +69,7 @@ internal class FeedState(
 
         override fun loadNew() {
             coroutineScope.launch {
-                updateState(messagesRepository.getMessages(calendar.now()))
+                updateState(postsRepository.getPosts(calendar.now()))
             }
         }
 
@@ -78,7 +78,7 @@ internal class FeedState(
                 val lastPublication = publications.lastOrNull()
                 val lastPublicationTimestamp = lastPublication?.timestamp ?: calendar.now()
 
-                updateState(messagesRepository.getMessages(lastPublicationTimestamp))
+                updateState(postsRepository.getPosts(lastPublicationTimestamp))
             }
         }
 
