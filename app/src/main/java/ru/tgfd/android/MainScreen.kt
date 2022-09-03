@@ -15,15 +15,15 @@ import ru.tgfd.ui.state.State
 @Composable
 fun MainScreen(authorization: State) {
     var editTextState by remember { mutableStateOf("") }
-    val uiState = when (authorization) {
-        is Authorized -> UiState.Authorized(authorization::logout)
-        is CodeRequired -> UiState.CodeRequired(authorization::sendCode)
-        is PhoneRequired -> UiState.PhoneRequired(authorization::sendPhone)
-        is Unauthorized -> UiState.UnathorizedState(authorization::login)
-        is Feed -> UiState.Feed
+    val viewsState = when (authorization) {
+        is Authorized -> ViewsState.Authorized(authorization::logout)
+        is CodeRequired -> ViewsState.CodeRequired(authorization::sendCode)
+        is PhoneRequired -> ViewsState.PhoneRequired(authorization::sendPhone)
+        is Unauthorized -> ViewsState.UnathorizedState(authorization::login)
+        is Feed -> ViewsState.Feed
     }
     Column {
-        with(uiState.editTextState) {
+        with(viewsState.editTextState) {
             InputField(
                 isVisible = isVisible,
                 header = header,
@@ -32,7 +32,7 @@ fun MainScreen(authorization: State) {
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        with(uiState.buttonState) {
+        with(viewsState.buttonState) {
             LoginButton(
                 isVisible = isVisible,
                 text = text,
@@ -77,11 +77,11 @@ fun InputField(isVisible: Boolean, header: String, text: String, onValueChange: 
     )
 }
 
-sealed class UiState(
+private sealed class ViewsState(
     val buttonState: ButtonState,
     val editTextState: EditTextState
 ) {
-    class UnathorizedState(buttonClick: () -> Unit) : UiState(
+    class UnathorizedState(buttonClick: () -> Unit) : ViewsState(
         ButtonState(
             isVisible = true,
             text = "Войти"
@@ -89,7 +89,7 @@ sealed class UiState(
         EditTextState(isVisible = false)
     )
 
-    class PhoneRequired(buttonClick: (String) -> Unit) : UiState(
+    class PhoneRequired(buttonClick: (String) -> Unit) : ViewsState(
         ButtonState(
             isVisible = true,
             text = "Отправить номер телефона",
@@ -98,7 +98,7 @@ sealed class UiState(
         EditTextState(isVisible = true, "Номер телефона")
     )
 
-    class CodeRequired(buttonClick: (String) -> Unit) : UiState(
+    class CodeRequired(buttonClick: (String) -> Unit) : ViewsState(
         ButtonState(
             isVisible = true,
             text = "Отправить код",
@@ -107,14 +107,14 @@ sealed class UiState(
         EditTextState(isVisible = true, "Код из смс")
     )
 
-    class Authorized(buttonClick: () -> Unit) : UiState(
+    class Authorized(buttonClick: () -> Unit) : ViewsState(
         ButtonState(
             isVisible = true,
             text = "Список чатов"
         ) { buttonClick() },
         EditTextState(isVisible = false)
     )
-    object Feed: UiState(
+    object Feed: ViewsState(
         ButtonState(false, "") {},
         EditTextState(false)
     )
