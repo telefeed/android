@@ -2,6 +2,7 @@ package ru.tgfd.core.feed
 
 import kotlinx.coroutines.*
 import ru.tgfd.core.model.ChannelPost
+import ru.tgfd.core.model.ChannelPostComment
 
 class FeedFacadeImpl(
     private val feedRepository: FeedRepository,
@@ -23,4 +24,7 @@ class FeedFacadeImpl(
             .take(limit)
             .toList()
     }
+
+    override suspend fun getPostComments(postId: Long): List<ChannelPostComment> =
+        feedRepository.getPostComments(postId)
 }

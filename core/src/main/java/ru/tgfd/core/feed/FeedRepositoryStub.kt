@@ -2,6 +2,8 @@ package ru.tgfd.core.feed
 
 import ru.tgfd.core.model.Channel
 import ru.tgfd.core.model.ChannelPost
+import ru.tgfd.core.model.ChannelPostComment
+import ru.tgfd.core.model.Person
 import kotlin.random.Random
 
 class FeedRepositoryStub : FeedRepository {
@@ -20,5 +22,10 @@ class FeedRepositoryStub : FeedRepository {
                 ),
                 channel = Channel(id = channelId, title = "channel$channelId")
             )
+        }
+
+    override suspend fun getPostComments(postId: Long): List<ChannelPostComment> =
+        (0..Random.nextLong(100L)).map { i ->
+            ChannelPostComment(i, Person(i, "person$i"), "comment$i")
         }
 }
