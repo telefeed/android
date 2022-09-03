@@ -5,17 +5,20 @@ import android.os.Build
 import android.util.Log
 import org.drinkless.td.libcore.telegram.Client
 import org.drinkless.td.libcore.telegram.TdApi
+import org.drinkless.td.libcore.telegram.TdApi.ChatTypeSupergroup
 import ru.tgfd.core.auth.AuthorizationApi
+import ru.tgfd.core.model.Channel
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class TelegramAuthorizationApi(
+class TelegramApi(
     private val context: Context
 ): AuthorizationApi {
 
-    private val TAG = TelegramAuthorizationApi::class.simpleName
+    private val TAG = TelegramApi::class.simpleName
     private val TDLIB_PARAMETERS = TdApi.TdlibParameters().apply {
         apiId = context.resources.getInteger(R.integer.telegram_api_id)
         apiHash = context.getString(R.string.telegram_api_hash)
@@ -86,6 +89,38 @@ class TelegramAuthorizationApi(
                     Log.d(TAG + "ololo", it.toString())
                 }
             }
+        }
+    }
+
+    override suspend fun getChanels() = suspendCoroutine<List<Channel>> { continuation ->
+        client.send(TdApi.GetChats(null, 100)) { result ->
+            val answer = mutableListOf<Channel>()
+            val listId = (result as? TdApi.Chats)?.chatIds ?: LongArray(0)
+            val countDone = AtomicInteger(0)
+            for (id in listId) {
+                client.send(TdApi.GetChat(id)) {
+                    val chat = it as TdApi.Chat
+                    if (chat.type.constructor == ChatTypeSupergroup.CONSTRUCTOR &&
+                        (chat.type as ChatTypeSupergroup).isChannel
+                    ) {
+                        synchronized(answer) {
+                            answer.add(Channel(id, chat.title))
+                        }
+                    }
+                    if (countDone.addAndGet(1) == listId.size) {
+                        continuation.resume(answer)
+                    }
+                }
+            }
+            if (listId.isEmpty()) continuation.resume(answer)
+        }
+    }
+
+    suspend fun getMessages(chatId: Long = -1001194965543, limit: Int = 3, startMessageId: Long = 0) {
+        client.send(TdApi.GetChatHistory(chatId, startMessageId, limit, 0, false)) {
+            val messages = (it as TdApi.Messages).messages
+
+
         }
     }
 
