@@ -20,7 +20,7 @@ internal class FeedState(
 
     init {
         authorizationState.filterIsInstance<Authorized>().onEach {
-            updateState(messagesRepository.getMessagesAfter(calendar.now()))
+            updateState(messagesRepository.getMessages(calendar.now()))
         }.launchIn(coroutineScope)
     }
 
@@ -71,7 +71,7 @@ internal class FeedState(
                 val firstPublication = publications.getOrNull(0)
                 val firstPublicationTimestamp = firstPublication?.timestamp ?: calendar.now()
 
-                updateState(messagesRepository.getMessagesBefore(firstPublicationTimestamp))
+                updateState(messagesRepository.getMessages(firstPublicationTimestamp))
             }
         }
 
@@ -80,7 +80,7 @@ internal class FeedState(
                 val lastPublication = publications.lastOrNull()
                 val lastPublicationTimestamp = lastPublication?.timestamp ?: calendar.now()
 
-                updateState(messagesRepository.getMessagesAfter(lastPublicationTimestamp))
+                updateState(messagesRepository.getMessages(lastPublicationTimestamp))
             }
         }
 

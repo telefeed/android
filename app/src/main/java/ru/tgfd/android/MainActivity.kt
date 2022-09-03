@@ -22,8 +22,7 @@ class MainActivity : ComponentActivity() {
             override fun now() = java.util.Calendar.getInstance().time.time
         }
         val repository = object : Repository {
-            override suspend fun getMessagesAfter(timestamp: Long) = emptyList<Message>()
-            override suspend fun getMessagesBefore(timestamp: Long) = emptyList<Message>()
+            override suspend fun getMessages(timestamp: Long) = emptyList<Message>()
         }
         val uiState = UiState.Builder
             .api(authorizationApi)
