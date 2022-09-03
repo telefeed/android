@@ -1,5 +1,6 @@
 package ru.tgfd.android.publication
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +18,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.skydoves.landscapist.glide.GlideImage
 import ru.tgfd.android.R
 import ru.tgfd.android.toStringData
 import ru.tgfd.ui.state.Publication
@@ -32,46 +34,47 @@ internal fun PublicationScreen(state: Publication) {
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp)
+        BackHandler { state.onClose() }
+        LazyColumn(
+            modifier = Modifier.background(Color.White),
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PostHeader(postData = state.data)
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                color = Color.Gray,
-                text = "${state.comments.size} КОММЕНТАРИЕВ"
-            )
-            Spacer(modifier = Modifier.height(5.dp))
-            LazyColumn(
-                modifier = Modifier.background(Color.White),
-                contentPadding = PaddingValues(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(state.comments) { item: CommentData ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
+            item { PostHeader(postData = state.data) }
+            item { Spacer(modifier = Modifier.height(20.dp)) }
+            item {
+                Text(
+                    color = Color.Gray,
+                    text = "${state.comments.size} КОММЕНТАРИЕВ"
+                )
+            }
+            item { Spacer(modifier = Modifier.height(5.dp)) }
+
+            items(state.comments) { item: CommentData ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                        Row(
+                            modifier = Modifier.padding(PaddingValues(top = 4.dp))
                         ) {
-                            Row(
-                                modifier = Modifier.padding(PaddingValues(top = 4.dp))
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_launcher_background),
-                                    contentDescription = "avatar",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(19.dp)
-                                        .clip(CircleShape)
-                                        .border(1.dp, Color.Gray, CircleShape)
-                                )
-                                Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
-                                    Text(text = item.author.name)
-                                }
-                                Text(
+                            GlideImage(
+                                imageModel = item.author.avatarUrl,
+                                contentDescription = "avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(19.dp)
+                                    .clip(CircleShape)
+                                    .border(1.dp, Color.Gray, CircleShape)
+                            )
+                            Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
+                                Text(text = item.author.name)
+                            }
+                            Text(
                                     text = item.timestamp.toStringData(),
                                     color = Color.Gray,
                                     modifier = Modifier.padding(horizontal = 20.dp)
@@ -87,7 +90,6 @@ internal fun PublicationScreen(state: Publication) {
                     }
                 }
             }
-        }
     }
 }
 

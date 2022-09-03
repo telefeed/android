@@ -1,6 +1,5 @@
 package ru.tgfd.android.publication
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,9 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import ru.tgfd.android.R
+import com.skydoves.landscapist.glide.GlideImage
 import ru.tgfd.android.toStringData
 import ru.tgfd.ui.state.data.PublicationData
 
@@ -21,14 +19,14 @@ fun PostHeader(postData: PublicationData) {
     Row(
         modifier = Modifier.padding(PaddingValues(top = 4.dp))
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = "avatar",
-            contentScale = ContentScale.Crop,
+        GlideImage(
+            imageModel = postData.author.avatarUrl,
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape)
+                .border(1.dp, Color.Gray, CircleShape),
+            contentDescription = "avatar",
+            contentScale = ContentScale.Crop,
         )
         Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
             Text(text = postData.author.name)

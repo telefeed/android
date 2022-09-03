@@ -1,20 +1,16 @@
 package ru.tgfd.android.feed
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,23 +19,22 @@ import ru.tgfd.android.publication.PostHeader
 import ru.tgfd.ui.state.Feed
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.PublicationData
-import java.util.*
 import kotlin.random.Random
 
 
 @Composable
 internal fun FeedScreen(state: Feed) {
-    val publications = state.publications
     LazyColumn(
         modifier = Modifier.background(Color.White),
         contentPadding = PaddingValues(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(publications) { item: PublicationData ->
+        items(state.publications) { item: PublicationData ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp)
+                    .clickable { state.onSelect(item) },
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 8.dp)
@@ -74,8 +69,8 @@ private fun PostFooter(postData: PublicationData) {
 @Composable
 fun FeedPreview() {
     val feed = object: Feed {
-        val author = Author("Boris Gubanov", "avatarUrl")
-        val originalAuthor = Author("Not Boris", "avatarUrl")
+        val author = Author("Boris Gubanov", "http://primrep.ru/wp-content/uploads/2016/01/avatar.jpg")
+        val originalAuthor = Author("Not Boris", "http://primrep.ru/wp-content/uploads/2016/01/avatar.jpg")
 
         val publication = PublicationData(1L,
             1L,
