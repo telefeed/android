@@ -1,4 +1,4 @@
-package ru.tgfd.android.telegram
+package ru.tgfd.android.telegram.example
 
 import android.content.Context
 import android.os.Build
@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.drinkless.td.libcore.telegram.Client
 import org.drinkless.td.libcore.telegram.TdApi
+import ru.tgfd.android.telegram.R
 import java.util.*
 
 class TelegramAPI(private val context: Context) {

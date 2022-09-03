@@ -8,7 +8,8 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import ru.tgfd.android.telegram.auth.*
+import ru.tgfd.android.telegram.TelegramAuthorizationApi
+import ru.tgfd.ui.state.*
 
 class MainActivity : ComponentActivity() {
 
@@ -23,7 +24,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mainactivity)
 
-        val authorization = TelegramAuthorization(this)
+        val authorizationApi = TelegramAuthorizationApi(this)
+        val authorization = TelegramAuthorization(
+            authorizationApi, lifecycleScope
+        )
         authorization.onEach { state ->
             when (state) {
                 is Authorized -> onAuthorized(state)

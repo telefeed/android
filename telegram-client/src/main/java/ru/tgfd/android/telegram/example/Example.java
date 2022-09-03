@@ -1,4 +1,4 @@
-package ru.tgfd.android.telegram;
+package ru.tgfd.android.telegram.example;
 
 import org.drinkless.td.libcore.telegram.Client;
 import org.drinkless.td.libcore.telegram.TdApi;

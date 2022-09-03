@@ -1,4 +1,4 @@
-package ru.tgfd.android.telegram
+package ru.tgfd.android.telegram.example
 
 enum class Authentication {
     UNAUTHENTICATED,

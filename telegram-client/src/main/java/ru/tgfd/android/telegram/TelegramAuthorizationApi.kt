@@ -1,21 +1,21 @@
-package ru.tgfd.android.telegram.auth
+package ru.tgfd.android.telegram
 
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import org.drinkless.td.libcore.telegram.Client
 import org.drinkless.td.libcore.telegram.TdApi
-import ru.tgfd.android.telegram.R
+import ru.tgfd.core.AuthorizationApi
 import java.util.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-class TelegramAuthorization(
+class TelegramAuthorizationApi(
     private val context: Context
-): StateFlow<Authorization> {
+): AuthorizationApi {
 
-    private val TAG = TelegramAuthorization::class.simpleName
+    private val TAG = TelegramAuthorizationApi::class.simpleName
     private val TDLIB_PARAMETERS = TdApi.TdlibParameters().apply {
         apiId = context.resources.getInteger(R.integer.telegram_api_id)
         apiHash = context.getString(R.string.telegram_api_hash)
@@ -28,21 +28,6 @@ class TelegramAuthorization(
         applicationVersion = "0.1"
         enableStorageOptimizer = true
     }
-
-    private val stateUnauthorized = object : Unauthorized {
-        override fun login() = setTdlibParameters()
-    }
-    private val statePhoneRequired = object : PhoneRequired {
-        override fun sendPhone(phone: String) = setAuthenticationPhoneNumber(phone)
-    }
-    private val stateCodeRequired = object : CodeRequired {
-        override fun sendCode(code: String) = checkAuthenticationCode(code)
-    }
-    private val stateAuthorized = object : Authorized {
-        override fun logout() = getChatsList()
-    }
-
-    private val state = MutableStateFlow<Authorization>(stateUnauthorized)
 
     private val clientResultHandler = Client.ResultHandler { data ->
         Log.d(TAG, "onResult: ${data::class.java.simpleName}")
@@ -58,21 +43,24 @@ class TelegramAuthorization(
             else -> Log.d(TAG, "Unhandled onResult call with data: $data.")
         }
     }
-    private val updateExceptionHandler = Client.ExceptionHandler {
 
-    }
-    private val defaultExceptionHandler = Client.ExceptionHandler {
-
-    }
+    private val updateExceptionHandler = Client.ExceptionHandler {}
+    private val defaultExceptionHandler = Client.ExceptionHandler {}
     private val client = Client.create(
         clientResultHandler, updateExceptionHandler, defaultExceptionHandler
     )
 
-    private fun setTdlibParameters() {
+    private var currentContinuation: Continuation<AuthorizationApi.Response>? = null
+
+    override suspend fun login() = suspendCoroutine { continuation ->
+        currentContinuation = continuation
+
         client.send(TdApi.SetTdlibParameters(TDLIB_PARAMETERS)) { }
     }
 
-    private fun setAuthenticationPhoneNumber(phone: String) {
+    override suspend fun sendPhone(phone: String) = suspendCoroutine { continuation ->
+        currentContinuation = continuation
+
         val settings = TdApi.PhoneNumberAuthenticationSettings(
             false,
             false,
@@ -83,11 +71,15 @@ class TelegramAuthorization(
         client.send(TdApi.SetAuthenticationPhoneNumber(phone, settings)) {}
     }
 
-    private fun checkAuthenticationCode(code: String) {
+    override suspend fun sendCode(code: String) = suspendCoroutine { continuation ->
+        currentContinuation = continuation
+
         client.send(TdApi.CheckAuthenticationCode(code)) {}
     }
 
-    private fun getChatsList() {
+    override suspend fun logout() = suspendCoroutine { continuation ->
+        currentContinuation = continuation
+
         client.send(TdApi.GetChats(null, 100)) { result ->
             for (id in (result as? TdApi.Chats)?.chatIds ?: LongArray(0)) {
                 client.send(TdApi.GetChat(id)) {
@@ -100,25 +92,25 @@ class TelegramAuthorization(
     private fun onAuthorizationStateUpdated(authorizationState: TdApi.AuthorizationState) {
         when (authorizationState.constructor) {
             TdApi.AuthorizationStateWaitTdlibParameters.CONSTRUCTOR -> {
-                state.value = stateUnauthorized
+                currentContinuation?.resume(AuthorizationApi.Response.UNAUTHORIZED)
             }
             TdApi.AuthorizationStateWaitEncryptionKey.CONSTRUCTOR -> {
                 client.send(TdApi.CheckDatabaseEncryptionKey()) {}
             }
             TdApi.AuthorizationStateWaitPhoneNumber.CONSTRUCTOR -> {
-                state.value = statePhoneRequired
+                currentContinuation?.resume(AuthorizationApi.Response.WAIT_PHONE)
             }
             TdApi.AuthorizationStateWaitCode.CONSTRUCTOR -> {
-                state.value = stateCodeRequired
+                currentContinuation?.resume(AuthorizationApi.Response.WAIT_CODE)
             }
             TdApi.AuthorizationStateWaitPassword.CONSTRUCTOR -> {
                 Log.d(TAG, "onResult: AuthorizationStateWaitPassword")
             }
             TdApi.AuthorizationStateReady.CONSTRUCTOR -> {
-                state.value = stateAuthorized
+                currentContinuation?.resume(AuthorizationApi.Response.AUTHORIZED)
             }
             TdApi.AuthorizationStateLoggingOut.CONSTRUCTOR -> {
-                state.value = stateUnauthorized
+                currentContinuation?.resume(AuthorizationApi.Response.UNAUTHORIZED)
             }
             TdApi.AuthorizationStateClosing.CONSTRUCTOR -> {
                 Log.d(TAG, "onResult: AuthorizationStateClosing")
@@ -129,14 +121,4 @@ class TelegramAuthorization(
             else -> Log.d(TAG, "Unhandled authorizationState with data: $authorizationState.")
         }
     }
-
-    override val replayCache: List<Authorization>
-        get() = state.replayCache
-
-    override suspend fun collect(
-        collector: FlowCollector<Authorization>
-    ) = state.collect(collector)
-
-    override val value: Authorization
-        get() = state.value
 }

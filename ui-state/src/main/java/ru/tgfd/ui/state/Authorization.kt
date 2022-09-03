@@ -1,4 +1,4 @@
-package ru.tgfd.android.telegram.auth
+package ru.tgfd.ui.state
 
 sealed interface Authorization
 

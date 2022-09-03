@@ -16,3 +16,5 @@ rootProject.name = "TeleFeed"
 include ':app'
 include ':telegram-sdk'
 include ':telegram-client'
+include ':core'
+include ':ui-state'

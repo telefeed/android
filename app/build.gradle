@@ -36,7 +36,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion compose_compiler
     }
     packagingOptions {
         resources {
@@ -46,6 +46,8 @@ android {
 }
 
 dependencies {
+    implementation project(path: ':ui-state')
+    implementation project(path: ':core')
     implementation project(path: ':telegram-client')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.10"

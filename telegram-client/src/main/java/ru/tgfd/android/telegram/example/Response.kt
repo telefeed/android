@@ -1,4 +1,4 @@
-package ru.tgfd.android.telegram
+package ru.tgfd.android.telegram.example
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
