@@ -9,7 +9,7 @@ interface FeedRepository {
 
     suspend fun getChannelPosts(
         channel: Channel,
-        limit: Int = 0,
+        limit: Int = 20,
         startMessageId: Long = 0
     ): List<ChannelPost>
 

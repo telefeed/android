@@ -142,28 +142,33 @@ class TelegramApi(
         val method = TdApi.GetChatHistory(channel.id, startMessageId, 0, limit, false)
         client.send(method) { result ->
             result as TdApi.Messages
+            val getMessages =
+                TdApi.GetChatHistory(channel.id, result.messages[0].id, 0, limit, false)
+            client.send(getMessages) { result ->
+                result as TdApi.Messages
+                val messages = result.messages
+                    .filter { it.isChannelPost }
+                    .filter { it.content is TdApi.MessageText || it.content is TdApi.MessagePhoto }
+                    .map { message ->
+                        val text = when (val content = message.content) {
+                            is TdApi.MessagePhoto -> content.caption.text
+                            is TdApi.MessageText -> content.text.text
+                            else -> error("unreachable")
+                        }
 
-            val messages = result.messages
-                .filter { it.isChannelPost }
-                .filter { it.content is TdApi.MessageText || it.content is TdApi.MessagePhoto }
-                .map { message ->
-                    val text = when (val content = message.content) {
-                        is TdApi.MessagePhoto -> content.caption.text
-                        is TdApi.MessageText -> content.text.text
-                        else -> error("unreachable")
+                        ChannelPost(
+                            id = message.id,
+                            text = text,
+                            timestamp = message.date.toLong(),
+                            channel = channel
+                        )
                     }
 
-                    ChannelPost(
-                        id = message.id,
-                        text = text,
-                        timestamp = message.date.toLong(),
-                        channel = channel
-                    )
-                }
-
-            continuation.resume(messages)
+                continuation.resume(messages)
+            }
         }
     }
+
 
     override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
         suspendCoroutine { continuation ->
