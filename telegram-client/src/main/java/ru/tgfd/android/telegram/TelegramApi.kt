@@ -171,7 +171,7 @@ class TelegramApi(
                 coroutineScope.launch {
                     result as TdApi.MessageThreadInfo
 
-                    result.messages.mapNotNull { message ->
+                    val comments = result.messages.mapNotNull { message ->
                         val content = message.content
                         if (content !is TdApi.MessageText) {
                             return@mapNotNull null
@@ -190,6 +190,8 @@ class TelegramApi(
                             timestamp = message.date.toLong()
                         )
                     }
+
+                    it.resume(comments)
                 }
             }
         }
