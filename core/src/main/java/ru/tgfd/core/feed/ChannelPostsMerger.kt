@@ -18,6 +18,7 @@ internal object ChannelPostsMerger {
             compareByDescending<IndexedValue<ChannelPost>> { it.value.timestamp }.thenBy { it.index }
         )
         channelPosts.forEachIndexed { channelIndex, channelMessages ->
+            if (channelMessages.isEmpty()) return@forEachIndexed
             currentPostsTimestampQueue.add(IndexedValue(channelIndex, channelMessages.first()))
         }
 
