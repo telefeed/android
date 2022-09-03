@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val authorizationApi = TelegramApi(this)
+        val authorizationApi = TelegramApi(this, lifecycleScope)
         val calendar = object : Calendar {
             override fun now() = java.util.Calendar.getInstance().time.time
         }

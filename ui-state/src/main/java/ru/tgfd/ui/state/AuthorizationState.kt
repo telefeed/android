@@ -55,12 +55,6 @@ internal class AuthorizationState(
         }
     }
 
-    private fun debug() {
-        coroutineScope.launch {
-            (authorizationApi.getChanels())
-        }
-    }
-
     private fun updateStateByResponse(response: AuthorizationApi.Response): Unit = when (response) {
         AuthorizationApi.Response.WAIT_PHONE -> {
             state.value = statePhoneRequired
@@ -73,7 +67,6 @@ internal class AuthorizationState(
         }
         AuthorizationApi.Response.AUTHORIZED -> {
             state.value = stateAuthorized
-            debug()
         }
         AuthorizationApi.Response.ERROR -> {
             state.value = stateUnauthorized
