@@ -10,7 +10,7 @@ import ru.tgfd.core.AuthorizationApi
 class TelegramAuthorization(
     private val authorizationApi: AuthorizationApi,
     private val coroutineScope: CoroutineScope
-): StateFlow<Authorization> {
+): StateFlow<State> {
 
     private val stateUnauthorized = object : Unauthorized {
         override fun login() = this@TelegramAuthorization.login()
@@ -25,7 +25,7 @@ class TelegramAuthorization(
         override fun logout() = this@TelegramAuthorization.logout()
     }
 
-    private val state = MutableStateFlow<Authorization>(stateUnauthorized)
+    private val state = MutableStateFlow<State>(stateUnauthorized)
 
     private fun login() {
         coroutineScope.launch {
@@ -69,13 +69,13 @@ class TelegramAuthorization(
         }
     }
 
-    override val replayCache: List<Authorization>
+    override val replayCache: List<State>
         get() = state.replayCache
 
     override suspend fun collect(
-        collector: FlowCollector<Authorization>
+        collector: FlowCollector<State>
     ) = state.collect(collector)
 
-    override val value: Authorization
+    override val value: State
         get() = state.value
 }
