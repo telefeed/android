@@ -65,7 +65,7 @@ class UiState private constructor(
 
         fun build(): UiState {
             val authorizationState = AuthorizationState(authorizationApi, coroutineScope)
-            val publicationState = PublicationState(coroutineScope)
+            val publicationState = PublicationState(messagesRepository, coroutineScope)
             val feedState = FeedState(
                 messagesRepository,
                 authorizationState,

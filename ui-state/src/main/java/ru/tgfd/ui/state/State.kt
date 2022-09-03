@@ -1,5 +1,6 @@
 package ru.tgfd.ui.state
 
+import ru.tgfd.ui.state.data.CommentData
 import ru.tgfd.ui.state.data.PublicationData
 
 sealed interface State
@@ -34,6 +35,7 @@ interface Feed: State {
 
 interface Publication: State {
     val data: PublicationData
+    val comments: List<CommentData>
 
     fun onLike()
     fun onClose()
