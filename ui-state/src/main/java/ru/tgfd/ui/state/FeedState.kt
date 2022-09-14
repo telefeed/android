@@ -56,7 +56,7 @@ internal class FeedState(
             val firstNewPublicationTimestamp = newPublications.getOrNull(0)?.timestamp ?: 0
             val lastCurrentPublicationTimestamp = currentPublications.lastOrNull()?.timestamp ?: 0
 
-            if (firstNewPublicationTimestamp < lastCurrentPublicationTimestamp) {
+            if (firstNewPublicationTimestamp <= lastCurrentPublicationTimestamp) {
                 InternalFeedState(currentPublications + newPublications)
             } else {
                 InternalFeedState(newPublications)

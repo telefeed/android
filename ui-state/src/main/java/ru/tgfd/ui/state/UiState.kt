@@ -25,6 +25,7 @@ class UiState private constructor(
             publicationState
         ) { authorization, feed, publication ->
             state.update {
+                println("[dolf] update state")
                 when {
                     authorization !is Authorized -> authorization
                     publication != null -> publication

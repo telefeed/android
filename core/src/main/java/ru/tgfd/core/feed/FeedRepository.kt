@@ -5,6 +5,7 @@ import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.core.model.ChannelPostComment
 
 interface FeedRepository {
+
     suspend fun getChannels(): List<Channel>
 
     suspend fun getChannelPosts(
