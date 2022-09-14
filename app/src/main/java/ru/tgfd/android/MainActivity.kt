@@ -10,8 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import ru.tgfd.android.telegram.TelegramApi
 import ru.tgfd.ui.state.UiState
 import ru.tgfd.core.Calendar
-import ru.tgfd.core.feed.FeedFacadeImpl
-import ru.tgfd.core.feed.FeedRepositoryStub
+import ru.tgfd.core.feed.FeedStackFacade
 
 class MainActivity : ComponentActivity() {
 
@@ -23,7 +22,7 @@ class MainActivity : ComponentActivity() {
         val calendar = object : Calendar {
             override fun now() = java.util.Calendar.getInstance().time.time
         }
-        val repository = FeedFacadeImpl(feedRepository, backgroundScope)
+        val repository = FeedStackFacade(feedRepository, backgroundScope)
 
         val uiState = UiState.Builder
             .api(feedRepository)
