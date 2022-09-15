@@ -42,13 +42,21 @@ internal class FeedState(
                 PublicationData(
                     id = message.id,
                     channelId = message.channel.id,
-                    author = Author(message.channel.title, ""),
-                    originalAuthor = Author(message.channel.title, ""),
+                    author = Author(
+                        message.channel.title,
+                        "",
+                        lowQualityAvatar = message.channel.lowQualityAvatar
+                    ),
+                    originalAuthor = Author(
+                        message.channel.title,
+                        "",
+                        lowQualityAvatar = message.channel.lowQualityAvatar
+                    ),
                     text = message.text,
                     timestamp = message.timestamp,
                     imagesUrls = emptyList(),
                     likesCounter = 0L,
-                    commentsCounter = 0L,
+                    commentsCounter = message.commentsCount.toLong(),
                     viewsCounter = 0L
                 )
             }

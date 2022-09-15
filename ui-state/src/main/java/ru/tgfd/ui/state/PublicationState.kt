@@ -26,7 +26,7 @@ internal class PublicationState(
                 object : Publication {
                     override val data = publicationData
                     override val comments = comments.map {
-                        CommentData(it.text, it.timestamp, Author(it.author.name, ""))
+                        CommentData(it.text, it.timestamp, Author(it.author.name, "", null))
                     }
 
                     override fun onLike() {

@@ -51,7 +51,7 @@ class TelegramApi(
 
             }
 
-            else -> Log.d(TAG, "Unhandled onResult call with data: $data.")
+            else -> Log.d(TAG, "Unhandled onResult call with data: ${data.javaClass}.")
         }
     }
 
@@ -59,7 +59,10 @@ class TelegramApi(
     private val defaultExceptionHandler = Client.ExceptionHandler {}
     private val client = Client.create(
         clientResultHandler, updateExceptionHandler, defaultExceptionHandler
-    )
+    ).apply {
+        Client.setLogVerbosityLevel(1)
+        send(TdApi.SetLogVerbosityLevel(1)) {}
+    }
 
     private var currentContinuation: Continuation<AuthorizationApi.Response>? = null
 
@@ -129,7 +132,7 @@ class TelegramApi(
                 return@send
             }
 
-            val channel = Channel(chatId, chat.title)
+            val channel = Channel(chatId, chat.title, chat.photo?.minithumbnail?.data)
             continuation.resume(channel)
         }
     }
@@ -156,11 +159,14 @@ class TelegramApi(
                             else -> error("unreachable")
                         }
 
+                        val commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0
+
                         ChannelPost(
                             id = message.id,
                             text = text,
-                            timestamp = message.date.toLong(),
-                            channel = channel
+                            timestamp = message.date.toLong(), // TODO: тут дата оригинала, а не репоста
+                            channel = channel,
+                            commentsCount = commentsCount
                         )
                     }
 

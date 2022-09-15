@@ -8,7 +8,7 @@ import kotlin.random.Random
 
 class FeedRepositoryStub : FeedRepository {
     override suspend fun getChannels(): List<Channel> = (1..10L).map { id ->
-        Channel(id = id, title = "channel$id")
+        Channel(id = id, title = "channel$id", lowQualityAvatar = null)
     }
 
     override suspend fun getChannelPosts(
@@ -24,7 +24,8 @@ class FeedRepositoryStub : FeedRepository {
                     1640984400,  // 1 January 2022 12:00 AM
                     1661979600   // 1 September 2022 12:00 AM
                 ),
-                channel = channel
+                channel = channel,
+                commentsCount = Random.nextInt(100)
             )
         }.sortedByDescending { it.timestamp }
 

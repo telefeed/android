@@ -20,13 +20,13 @@ fun PostHeader(postData: PublicationData) {
         modifier = Modifier.padding(PaddingValues(top = 4.dp))
     ) {
         GlideImage(
-            imageModel = postData.author.avatarUrl,
+            imageModel = postData.author.lowQualityAvatar,
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
                 .border(1.dp, Color.Gray, CircleShape),
             contentDescription = "avatar",
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
         )
         Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
             Text(text = postData.author.name)

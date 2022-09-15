@@ -4,5 +4,6 @@ data class ChannelPost(
     val id: Long,
     val text: String,
     val timestamp: Long,
-    val channel: Channel
+    val channel: Channel,
+    val commentsCount: Int,
 )

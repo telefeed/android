@@ -96,7 +96,7 @@ internal fun PublicationScreen(state: Publication) {
 @Preview
 @Composable
 fun PublicationPreview() {
-    val author = Author("Boris Gubanov", "avatarUrl")
+    val author = Author("Boris Gubanov", "avatarUrl", null)
     val comment = CommentData(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt",
         Random.nextLong(10000, 99999),
