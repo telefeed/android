@@ -1,17 +1,16 @@
 package ru.tgfd.android
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.tgfd.android.authorization.AuthScreen
 import ru.tgfd.android.feed.FeedScreen
 import ru.tgfd.android.feed.FeedViewModel
-import ru.tgfd.android.publication.PublicationScreen
 import ru.tgfd.ui.state.Authorization
 import ru.tgfd.ui.state.Feed
 import ru.tgfd.ui.state.Publication
@@ -23,17 +22,21 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContent {
-            val appStateProvider = application as AppStateProvider
-            val collectAsState by appStateProvider.uiState.collectAsState()
-            val state = collectAsState
+        val appStateProvider = application as AppStateProvider
 
+        appStateProvider.uiState.onEach { state ->
             when (state) {
-                is Authorization -> AuthScreen(state)
-                is Feed -> FeedScreen(feedViewModel)
-                is Publication -> PublicationScreen(state)
+                is Authorization -> setContent {
+                    AuthScreen(state)
+                }
+                is Feed -> setContent {
+                    FeedScreen(feedViewModel)
+                }
+                is Publication -> {
+                    startActivity(Intent(this, PublicationActivity::class.java))
+                }
             }
-        }
+        }.launchIn(lifecycleScope)
     }
 }
 

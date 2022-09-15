@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.tgfd.android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -10,6 +12,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TeleFeed">
+        <activity
+            android:name=".PublicationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_publication"
+            android:theme="@style/Theme.TeleFeed" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,5 +30,4 @@
         </activity>
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
