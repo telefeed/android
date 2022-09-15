@@ -19,7 +19,7 @@ class ChannelPostsStack(
     private val posts = mutableListOf<ChannelPost>()
 
     private var postsUpdating = coroutineScope.launch {
-        updatePostsList()
+        updatePostsList(null)
     }
     private var isEmpty = false
 
@@ -40,25 +40,22 @@ class ChannelPostsStack(
 
         if (!isEmpty && posts.size < POSTS_LIMIT - 5) {
             postsUpdating = coroutineScope.launch {
-                updatePostsList()
+                updatePostsList(post?.id)
             }
         }
 
         return post
     }
 
-    private suspend fun updatePostsList() {
-        val newPosts = feedRepository.getChannelPosts(
+    private suspend fun updatePostsList(startMessageId: Long?) {
+        val newPosts: MutableList<ChannelPost> = feedRepository.getChannelPosts(
             channel = channel,
             limit = POSTS_LIMIT,
-            startMessageId = if (posts.isEmpty()) {
-                0
-            } else {
-                posts.last().id
-            }
-        )
+            startMessageId = startMessageId ?: 0
+        ).toMutableList()
 
         isEmpty = newPosts.isEmpty()
+
         posts.addAll(newPosts)
     }
 }

@@ -75,33 +75,27 @@ class TelegramApi(
         val method = TdApi.GetChatHistory(channel.id, startMessageId, 0, limit, false)
         telegramClient.send(method) { result ->
             result as TdApi.Messages
-            val getMessages =
-                TdApi.GetChatHistory(channel.id, result.messages[0].id, 0, limit, false)
-            telegramClient.send(getMessages) { result ->
-                result as TdApi.Messages
-                val messages = result.messages
-                    .filter { it.isChannelPost }
-                    .filter { it.content is TdApi.MessageText || it.content is TdApi.MessagePhoto }
-                    .map { message ->
-                        val text = when (val content = message.content) {
-                            is TdApi.MessagePhoto -> content.caption.text
-                            is TdApi.MessageText -> content.text.text
-                            else -> error("unreachable")
-                        }
-
-                        val commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0
-
-                        ChannelPost(
-                            id = message.id,
-                            text = text,
-                            timestamp = message.date.toLong(), // TODO: тут дата оригинала, а не репоста
-                            channel = channel,
-                            commentsCount = commentsCount
-                        )
+            val messages = result.messages
+                .filter { it.isChannelPost }
+                .filter { it.content is TdApi.MessageText || it.content is TdApi.MessagePhoto }
+                .map { message ->
+                    val text = when (val content = message.content) {
+                        is TdApi.MessagePhoto -> content.caption.text
+                        is TdApi.MessageText -> content.text.text
+                        else -> error("unreachable")
                     }
 
-                continuation.resume(messages)
-            }
+                    val commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0
+
+                    ChannelPost(
+                        id = message.id,
+                        text = text,
+                        timestamp = message.date.toLong(), // TODO: тут дата оригинала, а не репоста
+                        channel = channel,
+                        commentsCount = commentsCount
+                    )
+                }
+            continuation.resume(messages)
         }
     }
 
