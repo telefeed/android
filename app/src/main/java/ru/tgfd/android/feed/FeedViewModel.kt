@@ -1,19 +1,23 @@
 package ru.tgfd.android.feed
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import androidx.paging.PagingSource.LoadResult
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import ru.tgfd.android.AppStateProvider
 import ru.tgfd.core.feed.FeedFacade.Companion.POSTS_LIMIT
-import ru.tgfd.core.feed.FeedRepository
 import ru.tgfd.ui.state.Feed
 import ru.tgfd.ui.state.data.PublicationData
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class FeedViewModel : ViewModel() {
+class FeedViewModel(application: Application): AndroidViewModel(application) {
 
     private var currentContinuation: Continuation<LoadResult<Int, PublicationData>>? = null
     private var currentLoadParamsKey: Int? = null
@@ -25,8 +29,17 @@ class FeedViewModel : ViewModel() {
         PublicationsSource()
     }.flow.cachedIn(viewModelScope)
 
-    fun updateByState(state: Feed) {
-        println("[dolf] update view model")
+    init {
+        (application as AppStateProvider).uiState.filterIsInstance<Feed>().onEach { state ->
+            onStateChanged(state)
+        }.launchIn(viewModelScope)
+    }
+
+    fun onSelect(publication: PublicationData) {
+        currentState?.onSelect(publication)
+    }
+
+    private fun onStateChanged(state: Feed) {
         val from = currentState?.publications?.size ?: 0
         val to = state.publications.size
         val pageData = state.publications.subList(from, to)
@@ -53,22 +66,12 @@ class FeedViewModel : ViewModel() {
         currentContinuation = null // TODO: хак, надо отладить почему 2 раза вызывается
     }
 
-    fun onSelect(publication: PublicationData) {
-        currentState?.onSelect(publication)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        currentState = null
-    }
-
     private inner class PublicationsSource : PagingSource<Int, PublicationData>() {
         override fun getRefreshKey(state: PagingState<Int, PublicationData>) = state.anchorPosition
 
         override suspend fun load(
             params: LoadParams<Int>
         ): LoadResult<Int, PublicationData> = suspendCoroutine { continuation ->
-            println("[dolf] load data")
             currentContinuation = continuation
             currentLoadParamsKey = params.key
 
