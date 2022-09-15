@@ -5,10 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import androidx.paging.PagingSource.LoadResult
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import ru.tgfd.android.AppStateProvider
 import ru.tgfd.core.feed.FeedFacade.Companion.POSTS_LIMIT
 import ru.tgfd.ui.state.Feed
@@ -30,7 +27,9 @@ class FeedViewModel(application: Application): AndroidViewModel(application) {
     }.flow.cachedIn(viewModelScope)
 
     init {
-        (application as AppStateProvider).uiState.filterIsInstance<Feed>().onEach { state ->
+        (application as AppStateProvider).uiState.filterIsInstance<Feed>().filter {
+            it.publications.isNotEmpty()
+        }.onEach { state ->
             onStateChanged(state)
         }.launchIn(viewModelScope)
     }
@@ -40,6 +39,8 @@ class FeedViewModel(application: Application): AndroidViewModel(application) {
     }
 
     private fun onStateChanged(state: Feed) {
+        if (state == currentState) return // when back from publication
+
         val from = currentState?.publications?.size ?: 0
         val to = state.publications.size
         val pageData = state.publications.subList(from, to)
@@ -63,7 +64,6 @@ class FeedViewModel(application: Application): AndroidViewModel(application) {
                 }
             )
         )
-        currentContinuation = null // TODO: хак, надо отладить почему 2 раза вызывается
     }
 
     private inner class PublicationsSource : PagingSource<Int, PublicationData>() {
@@ -74,8 +74,7 @@ class FeedViewModel(application: Application): AndroidViewModel(application) {
         ): LoadResult<Int, PublicationData> = suspendCoroutine { continuation ->
             currentContinuation = continuation
             currentLoadParamsKey = params.key
-
-            currentState?.loadNew()
+            currentState?.loadOld()
         }
     }
 }

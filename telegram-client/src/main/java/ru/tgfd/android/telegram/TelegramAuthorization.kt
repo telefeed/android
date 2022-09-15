@@ -20,6 +20,8 @@ class TelegramAuthorization(
         apiId = context.resources.getInteger(R.integer.telegram_api_id)
         apiHash = context.getString(R.string.telegram_api_hash)
         useMessageDatabase = true
+        useChatInfoDatabase = true
+        useFileDatabase = true
         useSecretChats = false
         systemLanguageCode = Locale.getDefault().language
         databaseDirectory = context.filesDir.absolutePath

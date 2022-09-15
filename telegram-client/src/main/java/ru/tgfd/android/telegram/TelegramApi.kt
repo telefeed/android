@@ -13,6 +13,7 @@ import ru.tgfd.core.model.Channel
 import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.core.model.ChannelPostComment
 import ru.tgfd.core.model.Person
+import java.text.DateFormat
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -34,7 +35,7 @@ class TelegramApi(
     override suspend fun logout() = telegramAuthorization.logout()
 
     override suspend fun getChannels(): List<Channel> = suspendCoroutine { continuation ->
-        telegramClient.send(TdApi.GetChats(null, 150)) { result ->
+        telegramClient.send(TdApi.GetChats(null, 1000)) { result ->
             coroutineScope.launch {
                 result as? TdApi.Chats ?: run {
                     continuation.resume(emptyList())
@@ -77,16 +78,16 @@ class TelegramApi(
             result as TdApi.Messages
             val messages = result.messages
                 .filter { it.isChannelPost }
-                .filter { it.content is TdApi.MessageText || it.content is TdApi.MessagePhoto }
                 .map { message ->
                     val text = when (val content = message.content) {
                         is TdApi.MessagePhoto -> content.caption.text
                         is TdApi.MessageText -> content.text.text
-                        else -> error("unreachable")
+                        is TdApi.MessageVideo -> content.caption.text
+                        else -> ""
                     }
 
                     val commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0
-
+                    println("[message] ${channel.title} ${message.id} ${message.date.toLong().toStringData()}")
                     ChannelPost(
                         id = message.id,
                         text = text,
@@ -159,5 +160,12 @@ class TelegramApi(
 
             continuation.resume(person)
         }
+    }
+
+    fun Long.toStringData(): String {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = this * 1000
+        val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+        return formatter.format(calendar.time)
     }
 }

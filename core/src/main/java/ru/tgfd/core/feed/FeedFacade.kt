@@ -5,7 +5,7 @@ import ru.tgfd.core.model.ChannelPostComment
 
 interface FeedFacade {
     companion object {
-        const val POSTS_LIMIT = 10
+        const val POSTS_LIMIT = 15
     }
 
     suspend fun getPosts(timestamp: Long, limit: Int = POSTS_LIMIT): List<ChannelPost>

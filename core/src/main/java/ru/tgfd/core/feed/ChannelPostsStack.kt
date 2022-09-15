@@ -38,7 +38,7 @@ class ChannelPostsStack(
 
         post?.let { posts.remove(it) }
 
-        if (!isEmpty && posts.size < POSTS_LIMIT - 5) {
+        if (!isEmpty && posts.size < POSTS_LIMIT / 2) {
             postsUpdating = coroutineScope.launch {
                 updatePostsList(post?.id)
             }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.tgfd.core.auth.AuthorizationApi
 
@@ -57,19 +58,19 @@ internal class AuthorizationState(
 
     private fun updateStateByResponse(response: AuthorizationApi.Response): Unit = when (response) {
         AuthorizationApi.Response.WAIT_PHONE -> {
-            state.value = statePhoneRequired
+            state.update { statePhoneRequired }
         }
         AuthorizationApi.Response.WAIT_CODE -> {
-            state.value = stateCodeRequired
+            state.update { stateCodeRequired }
         }
         AuthorizationApi.Response.UNAUTHORIZED -> {
-            state.value = stateUnauthorized
+            state.update { stateUnauthorized }
         }
         AuthorizationApi.Response.AUTHORIZED -> {
-            state.value = stateAuthorized
+            state.update { stateAuthorized }
         }
         AuthorizationApi.Response.ERROR -> {
-            state.value = stateUnauthorized
+            state.update { stateUnauthorized }
         }
     }
 
