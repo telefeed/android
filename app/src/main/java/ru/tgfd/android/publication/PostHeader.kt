@@ -9,34 +9,40 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.toStringData
 import ru.tgfd.ui.state.data.PublicationData
 
 @Composable
 fun PostHeader(postData: PublicationData) {
-    Row(
-        modifier = Modifier.padding(PaddingValues(top = 4.dp))
-    ) {
+    Row {
         NetworkImage(
             asyncImage = postData.author.avatar,
             modifier = Modifier
-                .size(36.dp)
+                .size(44.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape)
         )
-        Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
-            Text(text = postData.author.name)
+        Column(modifier = Modifier.padding(PaddingValues(start = 12.dp))) {
+            Text(
+                text = postData.author.name,
+                fontSize = 18.sp
+            )
             if (postData.author != postData.originalAuthor) {
                 Text(text = "Переслано от ${postData.originalAuthor.name}")
             }
+            Text(
+                color = Color.Gray,
+                text = postData.timestamp.toStringData(),
+                fontSize = 12.sp
+            )
         }
-        Text(
-            color = Color.Gray,
-            text = postData.timestamp.toStringData(),
-            modifier = Modifier.padding(horizontal = 20.dp)
-        )
     }
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(postData.text)
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        text = postData.text,
+        fontSize = 16.sp,
+        color = Color.DarkGray,
+        lineHeight = 22.sp
+    )
 }

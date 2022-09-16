@@ -161,7 +161,7 @@ class TelegramApi(
 
             val person = Person(
                 id = result.id,
-                name = result.firstName + result.lastName,
+                name = "${result.firstName} ${result.lastName}",
                 avatar = avatar
             )
 
