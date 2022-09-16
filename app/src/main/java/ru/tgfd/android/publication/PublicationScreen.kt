@@ -25,62 +25,61 @@ import kotlin.random.Random
 
 @Composable
 internal fun PublicationScreen(state: Publication) {
-    Box(
+    LazyColumn(
         modifier = Modifier
             .background(Color.White)
-            .fillMaxWidth()
-            .padding(12.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            BackHandler { state.onClose() }
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
             PostHeader(state.data)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = state.data.text,
+                fontSize = 15.sp,
+                lineHeight = 20.sp
+            )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 color = Color.Gray,
                 text = "${state.comments.size} КОММЕНТАРИЕВ"
             )
             Spacer(modifier = Modifier.height(5.dp))
+        }
 
-            LazyColumn(
-                modifier = Modifier.background(Color.White),
-                contentPadding = PaddingValues(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+        items(state.comments) { item: CommentData ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                items(state.comments) { item: CommentData ->
-                    Column(
+                Row {
+                    NetworkImage(
+                        asyncImage = item.author.avatar,
                         modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        Row {
-                            NetworkImage(
-                                asyncImage = item.author.avatar,
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                            )
-                            Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
-                                Text(
-                                    text = item.author.name,
-                                    fontSize = 14.sp
-                                )
-                                Text(
-                                    text = item.timestamp.toStringData(),
-                                    color = Color.Gray,
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
+                            .size(32.dp)
+                            .clip(CircleShape)
+                    )
+                    Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
                         Text(
-                            text = item.text,
-                            modifier = Modifier.padding(PaddingValues(start = 42.dp)),
+                            text = item.author.name,
                             fontSize = 14.sp
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = item.timestamp.toStringData(),
+                            color = Color.Gray,
+                            fontSize = 10.sp
+                        )
                     }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = item.text,
+                    modifier = Modifier.padding(PaddingValues(start = 42.dp)),
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }

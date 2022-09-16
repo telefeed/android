@@ -58,7 +58,7 @@ internal class FeedState(
                     imagesUrls = emptyList(),
                     likesCounter = 0L,
                     commentsCounter = message.commentsCount.toLong(),
-                    viewsCounter = 0L
+                    viewsCounter = message.viewsCount.toLong()
                 )
             }
 

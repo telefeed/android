@@ -97,14 +97,14 @@ class TelegramApi(
                         else -> ""
                     }
 
-                    val commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0
                     println("[message] ${channel.title} ${message.id} ${message.date.toLong().toStringData()}")
                     ChannelPost(
                         id = message.id,
                         text = text,
                         timestamp = message.date.toLong(), // TODO: тут дата оригинала, а не репоста
                         channel = channel,
-                        commentsCount = commentsCount
+                        commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0,
+                        viewsCount = message.interactionInfo?.viewCount ?: 0
                     )
                 }
             continuation.resume(messages)
