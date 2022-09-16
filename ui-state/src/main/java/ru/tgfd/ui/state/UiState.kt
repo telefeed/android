@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import ru.tgfd.core.auth.AuthorizationApi
 import ru.tgfd.core.Calendar
+import ru.tgfd.core.LocalFileProvider
 import ru.tgfd.core.feed.FeedFacade
 
 class UiState private constructor(

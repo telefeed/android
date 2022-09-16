@@ -4,6 +4,8 @@ import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import ru.tgfd.android.telegram.TelegramApi
+import ru.tgfd.android.telegram.TelegramClient
+import ru.tgfd.android.telegram.TelegramFileManager
 import ru.tgfd.core.Calendar
 import ru.tgfd.core.feed.FeedStackFacade
 import ru.tgfd.ui.state.UiState
@@ -16,7 +18,16 @@ class App: Application(), AppStateProvider {
     }
 
     override val uiState by lazy {
-        val feedRepository = TelegramApi(this, backgroundScope)
+        val telegramClient = TelegramClient()
+        val telegramFileManager = TelegramFileManager(
+            telegramClient, backgroundScope
+        )
+        val feedRepository = TelegramApi(
+            this,
+            telegramClient,
+            telegramFileManager,
+            backgroundScope
+        )
         val repository = FeedStackFacade(feedRepository, backgroundScope)
 
         UiState.Builder

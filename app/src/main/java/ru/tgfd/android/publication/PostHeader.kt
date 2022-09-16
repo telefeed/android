@@ -8,9 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.skydoves.landscapist.glide.GlideImage
+import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.toStringData
 import ru.tgfd.ui.state.data.PublicationData
 
@@ -19,14 +18,12 @@ fun PostHeader(postData: PublicationData) {
     Row(
         modifier = Modifier.padding(PaddingValues(top = 4.dp))
     ) {
-        GlideImage(
-            imageModel = postData.author.lowQualityAvatar,
+        NetworkImage(
+            asyncImage = postData.author.avatar,
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape),
-            contentDescription = "avatar",
-            contentScale = ContentScale.Fit,
+                .border(1.dp, Color.Gray, CircleShape)
         )
         Column(modifier = Modifier.padding(PaddingValues(start = 10.dp))) {
             Text(text = postData.author.name)

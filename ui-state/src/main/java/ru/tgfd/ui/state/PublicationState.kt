@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.tgfd.core.AsyncImage
 import ru.tgfd.core.feed.FeedFacade
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.CommentData
@@ -26,7 +27,7 @@ internal class PublicationState(
                 object : Publication {
                     override val data = publicationData
                     override val comments = comments.map {
-                        CommentData(it.text, it.timestamp, Author(it.author.name, "", null))
+                        CommentData(it.text, it.timestamp, Author(it.author.name, it.author.avatar))
                     }
 
                     override fun onLike() {

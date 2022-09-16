@@ -3,7 +3,9 @@ package ru.tgfd.ui.state
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import ru.tgfd.core.AsyncImage
 import ru.tgfd.core.Calendar
+import ru.tgfd.core.LocalFileProvider
 import ru.tgfd.core.feed.FeedFacade
 import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.ui.state.data.Author
@@ -38,19 +40,18 @@ internal class FeedState(
     private fun updateState(messages: List<ChannelPost>) {
         state.update { currentState ->
             val currentPublications = currentState.publications
+
             val newPublications = messages.map { message ->
                 PublicationData(
                     id = message.id,
                     channelId = message.channel.id,
                     author = Author(
                         message.channel.title,
-                        "",
-                        lowQualityAvatar = message.channel.lowQualityAvatar
+                        message.channel.avatar
                     ),
                     originalAuthor = Author(
                         message.channel.title,
-                        "",
-                        lowQualityAvatar = message.channel.lowQualityAvatar
+                        message.channel.avatar
                     ),
                     text = message.text,
                     timestamp = message.timestamp,

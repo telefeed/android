@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.drinkless.td.libcore.telegram.TdApi
 import org.drinkless.td.libcore.telegram.TdApi.ChatTypeSupergroup
+import ru.tgfd.core.AsyncImage
 import ru.tgfd.core.auth.AuthorizationApi
 import ru.tgfd.core.feed.FeedRepository
 import ru.tgfd.core.model.Channel
@@ -20,10 +21,11 @@ import kotlin.coroutines.suspendCoroutine
 
 class TelegramApi(
     context: Context,
+    private val telegramClient: TelegramClient,
+    private val telegramFileManager: TelegramFileManager,
     private val coroutineScope: CoroutineScope
 ) : AuthorizationApi, FeedRepository {
 
-    private val telegramClient = TelegramClient()
     private val telegramAuthorization = TelegramAuthorization(context, telegramClient)
 
     override suspend fun login() = telegramAuthorization.login()
@@ -63,7 +65,16 @@ class TelegramApi(
                 return@send
             }
 
-            val channel = Channel(chatId, chat.title, chat.photo?.minithumbnail?.data)
+            val avatar = chat.photo?.small?.id?.let { chatPhotoFileId ->
+                telegramFileManager.downloadFile(chatPhotoFileId)
+
+                object : AsyncImage {
+                    override suspend fun bytes() = telegramFileManager.getImage(chatPhotoFileId)
+                }
+            } ?: AsyncImage.EMPTY
+
+            val channel = Channel(chatId, chat.title, avatar)
+
             continuation.resume(channel)
         }
     }
@@ -140,9 +151,18 @@ class TelegramApi(
         telegramClient.send(TdApi.GetUser(userId)) { result ->
             result as TdApi.User
 
+            val avatar = result.profilePhoto?.small?.id?.let { photoFileId ->
+                telegramFileManager.downloadFile(photoFileId)
+
+                object : AsyncImage {
+                    override suspend fun bytes() = telegramFileManager.getImage(photoFileId)
+                }
+            } ?: AsyncImage.EMPTY
+
             val person = Person(
                 id = result.id,
-                name = result.firstName + result.lastName
+                name = result.firstName + result.lastName,
+                avatar = avatar
             )
 
             continuation.resume(person)
@@ -153,9 +173,18 @@ class TelegramApi(
         telegramClient.send(TdApi.GetChat(chatId)) { result ->
             result as TdApi.Chat
 
+            val avatar = result.photo?.small?.id?.let { photoFileId ->
+                telegramFileManager.downloadFile(photoFileId)
+
+                object : AsyncImage {
+                    override suspend fun bytes() = telegramFileManager.getImage(photoFileId)
+                }
+            } ?: AsyncImage.EMPTY
+
             val person = Person(
                 id = result.id,
-                name = result.title
+                name = result.title,
+                avatar = avatar
             )
 
             continuation.resume(person)
