@@ -3,7 +3,7 @@ package ru.tgfd.android.telegram
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import org.drinkless.td.libcore.telegram.TdApi
+import org.drinkless.tdlib.TdApi
 import ru.tgfd.core.auth.AuthorizationApi
 import java.util.*
 import kotlin.coroutines.Continuation

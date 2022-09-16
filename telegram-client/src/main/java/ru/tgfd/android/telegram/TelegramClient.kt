@@ -1,7 +1,7 @@
 package ru.tgfd.android.telegram
 
-import org.drinkless.td.libcore.telegram.Client
-import org.drinkless.td.libcore.telegram.TdApi
+import org.drinkless.tdlib.Client
+import org.drinkless.tdlib.TdApi
 
 class TelegramClient {
 
@@ -14,11 +14,10 @@ class TelegramClient {
     private val client = Client.create(
         clientResultHandler, updateExceptionHandler, defaultExceptionHandler
     ).apply {
-        Client.setLogVerbosityLevel(1)
         send(TdApi.SetLogVerbosityLevel(1)) {}
     }
 
-    fun send(query: TdApi.Function , resultHandler: Client.ResultHandler) {
+    fun send(query: TdApi.Function<out TdApi.Object> , resultHandler: Client.ResultHandler) {
         client.send(query, resultHandler)
     }
 

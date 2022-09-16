@@ -3,7 +3,7 @@ package ru.tgfd.android.telegram
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import org.drinkless.td.libcore.telegram.TdApi
+import org.drinkless.tdlib.TdApi
 import ru.tgfd.core.LocalFileProvider
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

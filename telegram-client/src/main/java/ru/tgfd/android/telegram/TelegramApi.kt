@@ -1,12 +1,10 @@
 package ru.tgfd.android.telegram
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.drinkless.td.libcore.telegram.TdApi
-import org.drinkless.td.libcore.telegram.TdApi.ChatTypeSupergroup
+import org.drinkless.tdlib.TdApi
 import ru.tgfd.core.AsyncImage
 import ru.tgfd.core.auth.AuthorizationApi
 import ru.tgfd.core.feed.FeedRepository
@@ -60,7 +58,7 @@ class TelegramApi(
             chat as TdApi.Chat
 
             val type = chat.type
-            if (type !is ChatTypeSupergroup || !type.isChannel) {
+            if (type !is TdApi.ChatTypeSupergroup || !type.isChannel) {
                 continuation.resume(null)
                 return@send
             }
