@@ -3,6 +3,7 @@ package ru.tgfd.android.feed
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ru.tgfd.android.R
 import ru.tgfd.android.publication.PostHeader
 import ru.tgfd.ui.state.data.PublicationData
@@ -37,6 +39,22 @@ internal fun FeedScreen(feed: FeedViewModel) {
     val shape = RoundedCornerShape(20.dp)
     val publications: LazyPagingItems<PublicationData> =
         feed.publications.collectAsLazyPagingItems()
+
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = !isSystemInDarkTheme()
+
+    DisposableEffect(systemUiController, useDarkIcons) {
+        // Update all of the system bar colors to be transparent, and use
+        // dark icons if we're in light theme
+        systemUiController.setSystemBarsColor(
+            color = Color.White,
+            darkIcons = true
+        )
+
+        // setStatusBarColor() and setNavigationBarColor() also exist
+
+        onDispose {}
+    }
 
     LazyColumn(
         modifier = Modifier.background(Color(0xFFE7E8ED)),

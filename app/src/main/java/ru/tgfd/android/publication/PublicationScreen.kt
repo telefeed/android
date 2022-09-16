@@ -2,18 +2,21 @@ package ru.tgfd.android.publication
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.toStringData
 import ru.tgfd.core.AsyncImage
@@ -25,11 +28,31 @@ import kotlin.random.Random
 
 @Composable
 internal fun PublicationScreen(state: Publication) {
+    BackHandler {
+        state.onClose()
+    }
+
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = !isSystemInDarkTheme()
+
+    DisposableEffect(systemUiController, useDarkIcons) {
+        // Update all of the system bar colors to be transparent, and use
+        // dark icons if we're in light theme
+        systemUiController.setSystemBarsColor(
+            color = Color.White,
+            darkIcons = true
+        )
+
+        // setStatusBarColor() and setNavigationBarColor() also exist
+
+        onDispose {}
+    }
+
     LazyColumn(
         modifier = Modifier
             .background(Color.White)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
