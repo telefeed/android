@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.sp
 import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.toStringData
 import ru.tgfd.ui.state.data.PublicationData
+import java.text.DateFormat
+import java.util.*
 
 @Composable
 fun PostHeader(postData: PublicationData) {

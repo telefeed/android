@@ -121,6 +121,8 @@ internal fun PublicationScreen(state: Publication) {
 @Composable
 fun PublicationPreview() {
     val author = Author("Boris Gubanov", object : AsyncImage {
+        override val height = 160
+        override val width = 160
         override suspend fun bytes() = ByteArray(0)
     })
     val comment = CommentData(

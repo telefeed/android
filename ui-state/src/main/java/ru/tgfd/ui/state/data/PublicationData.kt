@@ -10,8 +10,8 @@ data class PublicationData(
     val text: String,
     val timestamp: Long,
     val imagesUrls: List<String>,
-    val likesCounter: Long,
-    val commentsCounter: Long,
-    val viewsCounter: Long,
+    val likesCounter: Int,
+    val commentsCounter: Int,
+    val viewsCounter: Int,
     val images: List<AsyncImage> = emptyList()
 )

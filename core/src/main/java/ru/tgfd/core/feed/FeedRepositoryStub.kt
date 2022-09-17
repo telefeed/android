@@ -10,6 +10,8 @@ import kotlin.random.Random
 class FeedRepositoryStub : FeedRepository {
     override suspend fun getChannels(): List<Channel> = (1..10L).map { id ->
         Channel(id = id, title = "channel$id", object: AsyncImage {
+            override val height = 0
+            override val width = 0
             override suspend fun bytes() = ByteArray(0)
         })
     }

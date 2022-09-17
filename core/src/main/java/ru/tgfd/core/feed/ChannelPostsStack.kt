@@ -18,17 +18,22 @@ class ChannelPostsStack(
 
     private val posts = mutableListOf<ChannelPost>()
 
+    private val skipResultWithSinglePost = coroutineScope.launch {
+        feedRepository.getChannelPosts(channel, 1, 0)
+    }
     private var postsUpdating = coroutineScope.launch {
         updatePostsList(null)
     }
     private var isEmpty = false
 
     override suspend fun peek(): ChannelPost? = suspendCoroutine { continuation ->
-        postsUpdating.invokeOnCompletion { exception ->
-            if (exception == null) {
-                continuation.resume(posts.getOrNull(0))
-            } else {
-                continuation.resumeWithException(exception)
+        skipResultWithSinglePost.invokeOnCompletion {
+            postsUpdating.invokeOnCompletion { exception ->
+                if (exception == null) {
+                    continuation.resume(posts.getOrNull(0))
+                } else {
+                    continuation.resumeWithException(exception)
+                }
             }
         }
     }

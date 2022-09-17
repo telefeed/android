@@ -12,8 +12,6 @@ import ru.tgfd.core.model.Channel
 import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.core.model.ChannelPostComment
 import ru.tgfd.core.model.Person
-import java.text.DateFormat
-import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -67,6 +65,8 @@ class TelegramApi(
                 telegramFileManager.downloadFile(chatPhotoFileId)
 
                 object : AsyncImage {
+                    override val width = 160
+                    override val height = 160
                     override suspend fun bytes() = telegramFileManager.getImage(chatPhotoFileId)
                 }
             } ?: AsyncImage.EMPTY
@@ -82,78 +82,120 @@ class TelegramApi(
         limit: Int,
         startMessageId: Long
     ): List<ChannelPost> = suspendCoroutine { continuation ->
-        val method = TdApi.GetChatHistory(channel.id, startMessageId, 0, limit, false)
+        coroutineScope.launch {
+            var history = getChatHistory(channel.id, startMessageId, limit).toMutableList()
+            var messageGroupStartIndex: Int? = null
+            if (history.size == limit) {
+                for (previousMessageIndex in (history.lastIndex - 1) downTo 0) {
+                    val previousMessage = history.getOrNull(previousMessageIndex) ?: break
+                    if (previousMessage.date == history.last().date) {
+                        messageGroupStartIndex = previousMessageIndex
+                    } else {
+                        break
+                    }
+                }
+            }
+            if (messageGroupStartIndex != null) {
+                history = history.subList(0, messageGroupStartIndex)
+            }
+
+            val posts = mutableListOf<ChannelPost>()
+            history.forEach { message ->
+                val timestamp = message.date.toLong() * 1000
+                val previousMessageIsTheSame = posts.lastOrNull()?.timestamp == timestamp
+                val content = message.content
+                val (text, image) = when (content) {
+                    is TdApi.MessagePhoto -> {
+                        val text = content.caption.text
+                        val image = content.photo.sizes.find { it.type == "x" }?.let { photoSize ->
+                            object : AsyncImage {
+                                override val height = photoSize.height
+                                override val width = photoSize.width
+                                override suspend fun bytes() = telegramFileManager.getImage(
+                                    photoSize.photo.id
+                                )
+                            }
+                        }
+                        text to image
+                    }
+                    is TdApi.MessageText -> content.text.text to null
+                    is TdApi.MessageVideo -> content.caption.text to null
+                    else -> "" to null
+                }
+                val images = mutableListOf<AsyncImage>()
+
+                image?.also { images.add(it) }
+
+                val post = ChannelPost(
+                    id = message.id,
+                    text = text,
+                    timestamp = timestamp,
+                    channel = channel,
+                    commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0,
+                    viewsCount = message.interactionInfo?.viewCount ?: 0,
+                    images = images
+                )
+
+                if (previousMessageIsTheSame) {
+                    val previousPost = posts.removeLast()
+                    images.addAll(previousPost.images)
+                }
+
+                posts.add(post)
+            }
+
+            continuation.resume(posts)
+        }
+    }
+
+    private suspend fun getChatHistory(
+        chatId: Long, fromMessageId: Long, limit: Int
+    ): List<TdApi.Message> = suspendCoroutine { continuation ->
+        val method = TdApi.GetChatHistory(chatId, fromMessageId, 0, limit, false)
+
         telegramClient.send(method) { result ->
             result as TdApi.Messages
-            val messages = result.messages
-                .filter { it.isChannelPost }
-                .map { message ->
-                    val content = message.content
-                    val text = when (content) {
-                        is TdApi.MessagePhoto -> content.caption.text
-                        is TdApi.MessageText -> content.text.text
-                        is TdApi.MessageVideo -> content.caption.text
-                        else -> ""
-                    }
 
-                    println("[message] ${channel.title} ${message.id} ${message.date.toLong().toStringData()}")
-                    ChannelPost(
-                        id = message.id,
-                        text = text,
-                        timestamp = message.date.toLong(), // TODO: тут дата оригинала, а не репоста
-                        channel = channel,
-                        commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0,
-                        viewsCount = message.interactionInfo?.viewCount ?: 0,
-                        images = if (content is TdApi.MessagePhoto) {
-                            content.photo.sizes.find { it.type == "x" }?.let { file ->
-                                listOf(object : AsyncImage {
-                                    override suspend fun bytes() = telegramFileManager.getImage(file.photo.id)
-                                })
-                            } ?: emptyList()
-                        } else {
-                            emptyList()
-                        }
-                    )
-                }
-            continuation.resume(messages)
+            continuation.resume(result.messages.filter { it.isChannelPost })
         }
     }
 
 
-    override suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment> =
-        suspendCoroutine { continuation ->
-            val method = TdApi.GetMessageThreadHistory(channelId, postId, 0, 0, 100)
-            telegramClient.send(method) { result ->
-                coroutineScope.launch {
-                    if (result !is TdApi.Messages) {
-                        continuation.resume(emptyList())
-                        return@launch
-                    }
-
-                    val comments = result.messages.mapNotNull { message ->
-                        val content = message.content
-                        if (content !is TdApi.MessageText) {
-                            return@mapNotNull null
-                        }
-
-                        val author = when (val senderId = message.senderId) {
-                            is TdApi.MessageSenderUser -> getUser(senderId.userId)
-                            is TdApi.MessageSenderChat -> getUserAsChat(senderId.chatId)
-                            else -> error("unknown senderId type")
-                        }
-
-                        ChannelPostComment(
-                            id = message.id,
-                            author = author,
-                            text = content.text.text,
-                            timestamp = message.date.toLong()
-                        )
-                    }
-
-                    continuation.resume(comments)
+    override suspend fun getPostComments(
+        channelId: Long, postId: Long
+    ): List<ChannelPostComment> = suspendCoroutine { continuation ->
+        val method = TdApi.GetMessageThreadHistory(channelId, postId, 0, 0, 1000)
+        telegramClient.send(method) { result ->
+            coroutineScope.launch {
+                if (result !is TdApi.Messages) {
+                    continuation.resume(emptyList())
+                    return@launch
                 }
+
+                val comments = result.messages.mapNotNull { message ->
+                    val content = message.content
+                    if (content !is TdApi.MessageText) {
+                        return@mapNotNull null
+                    }
+
+                    val author = when (val senderId = message.senderId) {
+                        is TdApi.MessageSenderUser -> getUser(senderId.userId)
+                        is TdApi.MessageSenderChat -> getUserAsChat(senderId.chatId)
+                        else -> error("unknown senderId type")
+                    }
+
+                    ChannelPostComment(
+                        id = message.id,
+                        author = author,
+                        text = content.text.text,
+                        timestamp = message.date.toLong()
+                    )
+                }
+
+                continuation.resume(comments)
             }
         }
+    }
 
     private suspend fun getUser(userId: Long): Person = suspendCoroutine { continuation ->
         telegramClient.send(TdApi.GetUser(userId)) { result ->
@@ -163,6 +205,8 @@ class TelegramApi(
                 telegramFileManager.downloadFile(photoFileId)
 
                 object : AsyncImage {
+                    override val width = 160
+                    override val height = 160
                     override suspend fun bytes() = telegramFileManager.getImage(photoFileId)
                 }
             } ?: AsyncImage.EMPTY
@@ -185,6 +229,8 @@ class TelegramApi(
                 telegramFileManager.downloadFile(photoFileId)
 
                 object : AsyncImage {
+                    override val width = 160
+                    override val height = 160
                     override suspend fun bytes() = telegramFileManager.getImage(photoFileId)
                 }
             } ?: AsyncImage.EMPTY
@@ -197,12 +243,5 @@ class TelegramApi(
 
             continuation.resume(person)
         }
-    }
-
-    fun Long.toStringData(): String {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = this * 1000
-        val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-        return formatter.format(calendar.time)
     }
 }
