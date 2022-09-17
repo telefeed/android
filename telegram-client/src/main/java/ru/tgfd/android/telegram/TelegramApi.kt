@@ -14,6 +14,7 @@ import ru.tgfd.core.model.ChannelPostComment
 import ru.tgfd.core.model.Person
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.abs
 
 class TelegramApi(
     context: Context,
@@ -46,7 +47,7 @@ class TelegramApi(
 
                 val channels = deferredChats.mapNotNull { it.await() }
 
-                continuation.resume(channels)
+                continuation.resume(channels.filter { it.title.contains("SVTV") })
             }
         }
     }
@@ -88,7 +89,8 @@ class TelegramApi(
             if (history.size == limit) {
                 for (previousMessageIndex in (history.lastIndex - 1) downTo 0) {
                     val previousMessage = history.getOrNull(previousMessageIndex) ?: break
-                    if (previousMessage.date == history.last().date) {
+                    val sameMessage = abs(previousMessage.date - history.last().date) < 5
+                    if (sameMessage) {
                         messageGroupStartIndex = previousMessageIndex
                     } else {
                         break
@@ -102,7 +104,8 @@ class TelegramApi(
             val posts = mutableListOf<ChannelPost>()
             history.forEach { message ->
                 val timestamp = message.date.toLong() * 1000
-                val previousMessageIsTheSame = posts.lastOrNull()?.timestamp == timestamp
+                val previousPostTimestamp = posts.lastOrNull()?.timestamp ?: 0
+                val previousMessageIsTheSame = abs(previousPostTimestamp - timestamp) < 5000
                 val content = message.content
                 val (text, image) = when (content) {
                     is TdApi.MessagePhoto -> {

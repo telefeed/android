@@ -85,7 +85,7 @@ internal class FeedState(
         override fun loadOld() {
             coroutineScope.launch {
                 val lastPublication = publications.lastOrNull()
-                val lastPublicationTimestamp = lastPublication?.timestamp?.toLong() ?: calendar.now()
+                val lastPublicationTimestamp = lastPublication?.timestamp ?: calendar.now()
 
                 updateState(postsRepository.getPosts(lastPublicationTimestamp))
             }
