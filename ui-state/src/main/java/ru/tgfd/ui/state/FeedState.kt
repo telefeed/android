@@ -23,7 +23,7 @@ internal class FeedState(
 
     init {
         authorizationState.filterIsInstance<Authorized>().onEach {
-            updateState(postsRepository.getPosts(calendar.now()))
+            updateState(postsRepository.getPosts())
         }.launchIn(coroutineScope)
     }
 
@@ -79,7 +79,7 @@ internal class FeedState(
 
         override fun loadNew() {
             coroutineScope.launch {
-                updateState(postsRepository.getPosts(calendar.now()))
+                updateState(postsRepository.getPosts())
             }
         }
 

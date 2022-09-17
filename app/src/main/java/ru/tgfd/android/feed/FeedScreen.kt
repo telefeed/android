@@ -28,6 +28,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ru.tgfd.android.R
 import ru.tgfd.android.publication.PostHeader
@@ -56,47 +58,60 @@ internal fun FeedScreen(feed: FeedViewModel) {
         onDispose {}
     }
 
-    LazyColumn(
-        modifier = Modifier.background(Color(0xFFE7E8ED)),
-        contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    val swipeRefreshState = rememberSwipeRefreshState(false)
+
+    SwipeRefresh(
+        state = swipeRefreshState,
+        onRefresh = {
+            swipeRefreshState.isRefreshing = true
+            feed.refresh()
+        },
     ) {
-        items(items = publications) { itemData ->
-            itemData?.let { item ->
-                Column(
-                    modifier = Modifier
-                        .clip(shape)
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .clickable { feed.onSelect(item) },
-                ) {
+        LazyColumn(
+            modifier = Modifier.background(Color(0xFFE7E8ED)),
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(items = publications) { itemData ->
+
+                swipeRefreshState.isRefreshing = false
+
+                itemData?.let { item ->
                     Column(
                         modifier = Modifier
-                            .padding(16.dp)
+                            .clip(shape)
                             .fillMaxWidth()
+                            .background(Color.White)
+                            .clickable { feed.onSelect(item) },
                     ) {
-                        PostHeader(item)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ExpandableText(
-                            text = item.text,
-                            minimizedMaxLines = 6
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        PostFooter(item)
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth()
+                        ) {
+                            PostHeader(item)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            ExpandableText(
+                                text = item.text,
+                                minimizedMaxLines = 6
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            PostFooter(item)
+                        }
                     }
                 }
             }
-        }
-        publications.apply {
-            when {
-                loadState.refresh is LoadState.Loading -> {
-                    //You can add modifier to manage load state when first time response page is loading
-                }
-                loadState.append is LoadState.Loading -> {
-                    //You can add modifier to manage load state when next response page is loading
-                }
-                loadState.append is LoadState.Error -> {
-                    //You can use modifier to show error message
+            publications.apply {
+                when {
+                    loadState.refresh is LoadState.Loading -> {
+                        //You can add modifier to manage load state when first time response page is loading
+                    }
+                    loadState.append is LoadState.Loading -> {
+                        //You can add modifier to manage load state when next response page is loading
+                    }
+                    loadState.append is LoadState.Error -> {
+                        //You can use modifier to show error message
+                    }
                 }
             }
         }

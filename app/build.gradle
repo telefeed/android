@@ -60,6 +60,7 @@ dependencies {
     implementation 'androidx.paging:paging-compose:1.0.0-alpha16'
 
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.26.3-beta"
+    implementation "com.google.accompanist:accompanist-swiperefresh:0.26.3-beta"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.10"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'

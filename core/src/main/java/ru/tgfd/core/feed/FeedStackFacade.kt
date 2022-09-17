@@ -11,39 +11,37 @@ class FeedStackFacade(
     private val coroutineScope: CoroutineScope,
 ) : FeedFacade {
 
-    private lateinit var postsStacks: List<PostsStack>
-
-    private val stacksCreating by lazy {
-        coroutineScope.launch {
-            postsStacks = feedRepository.getChannels().map { channel ->
-                ChannelPostsStack(
-                    feedRepository, channel, coroutineScope
-                )
-            }
-        }
-    }
+    private var postsStacks: List<PostsStack> = emptyList()
 
     override suspend fun getPosts(
         timestamp: Long, limit: Int
     ) = suspendCoroutine<List<ChannelPost>> { continuation ->
-        stacksCreating.invokeOnCompletion {
-            coroutineScope.launch {
-                prepareStacks(timestamp)
-
-                val posts = mutableListOf<ChannelPost>()
-                for (i in 0 until limit) {
-                    val post = popNewestPost()
-
-                    if (post == null) {
-                        break
-                    } else {
-                        posts.add(post)
-                    }
-                }
-
-                continuation.resume(posts)
+        coroutineScope.launch {
+            if (timestamp == Long.MAX_VALUE || postsStacks.isEmpty()) {
+                postsStacks = buildStacks()
             }
+
+            prepareStacks(timestamp)
+
+            val posts = mutableListOf<ChannelPost>()
+            for (i in 0 until limit) {
+                val post = popNewestPost()
+
+                if (post == null) {
+                    break
+                } else {
+                    posts.add(post)
+                }
+            }
+
+            continuation.resume(posts)
         }
+    }
+
+    private suspend fun buildStacks() = feedRepository.getChannels().map { channel ->
+        ChannelPostsStack(
+            feedRepository, channel, coroutineScope
+        )
     }
 
     private suspend fun prepareStacks(timestamp: Long) {

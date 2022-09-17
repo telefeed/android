@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import androidx.paging.PagingSource.LoadResult
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import ru.tgfd.android.AppStateProvider
 import ru.tgfd.core.feed.FeedFacade.Companion.POSTS_LIMIT
 import ru.tgfd.ui.state.Feed
@@ -16,14 +17,16 @@ import kotlin.coroutines.suspendCoroutine
 
 class FeedViewModel(application: Application): AndroidViewModel(application) {
 
+    private val publicationsSource = PublicationsSource()
+
     private var currentContinuation: Continuation<LoadResult<Int, PublicationData>>? = null
-    private var currentLoadParamsKey: Int? = null
+    private var currentLoadParamsKey: Int = 0
     private var currentState: Feed? = null
 
     val publications: Flow<PagingData<PublicationData>> = Pager(
         PagingConfig(pageSize = POSTS_LIMIT)
     ) {
-        PublicationsSource()
+        publicationsSource
     }.flow.cachedIn(viewModelScope)
 
     init {
@@ -38,16 +41,30 @@ class FeedViewModel(application: Application): AndroidViewModel(application) {
         currentState?.onSelect(publication)
     }
 
+    fun refresh() {
+        viewModelScope.launch {
+            publicationsSource.load(PagingSource.LoadParams.Refresh(
+                key = 0,
+                loadSize = POSTS_LIMIT,
+                placeholdersEnabled = false
+            ))
+        }
+    }
+
     private fun onStateChanged(state: Feed) {
         if (state == currentState) return // when back from publication
 
+        val currentPageKey = currentLoadParamsKey
         val from = currentState?.publications?.size ?: 0
         val to = state.publications.size
-        val pageData = state.publications.subList(from, to)
+
+        val pageData = if (currentPageKey == 0) {
+            state.publications
+        } else {
+            state.publications.subList(from, to)
+        }
 
         currentState = state
-
-        val currentPageKey = currentLoadParamsKey ?: 0
 
         currentContinuation?.resume(
             LoadResult.Page(
@@ -67,14 +84,19 @@ class FeedViewModel(application: Application): AndroidViewModel(application) {
     }
 
     private inner class PublicationsSource : PagingSource<Int, PublicationData>() {
-        override fun getRefreshKey(state: PagingState<Int, PublicationData>) = state.anchorPosition
+        override fun getRefreshKey(state: PagingState<Int, PublicationData>) = 0
 
         override suspend fun load(
             params: LoadParams<Int>
         ): LoadResult<Int, PublicationData> = suspendCoroutine { continuation ->
             currentContinuation = continuation
-            currentLoadParamsKey = params.key
-            currentState?.loadOld()
+            currentLoadParamsKey = params.key ?: 0
+
+            if (currentLoadParamsKey == 0) {
+                currentState?.loadNew()
+            } else {
+                currentState?.loadOld()
+            }
         }
     }
 }

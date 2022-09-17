@@ -8,6 +8,6 @@ interface FeedFacade {
         const val POSTS_LIMIT = 15
     }
 
-    suspend fun getPosts(timestamp: Long, limit: Int = POSTS_LIMIT): List<ChannelPost>
+    suspend fun getPosts(timestamp: Long = Long.MAX_VALUE, limit: Int = POSTS_LIMIT): List<ChannelPost>
     suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment>
 }
