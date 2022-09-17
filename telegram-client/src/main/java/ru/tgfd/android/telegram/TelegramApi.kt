@@ -16,6 +16,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.abs
 
+private const val SAME_MESSAGE_MAX_DELTA_MS = 10
+
 class TelegramApi(
     context: Context,
     private val telegramClient: TelegramClient,
@@ -85,18 +87,21 @@ class TelegramApi(
     ): List<ChannelPost> = suspendCoroutine { continuation ->
         coroutineScope.launch {
             var history = getChatHistory(channel.id, startMessageId, limit).toMutableList()
+            if (limit > 1 && history.size == 1) {
+                history.addAll(getChatHistory(channel.id, history[0].id, limit - 1))
+            }
+
             var messageGroupStartIndex: Int? = null
-            if (history.size == limit) {
-                for (previousMessageIndex in (history.lastIndex - 1) downTo 0) {
-                    val previousMessage = history.getOrNull(previousMessageIndex) ?: break
-                    val sameMessage = abs(previousMessage.date - history.last().date) < 5
-                    if (sameMessage) {
-                        messageGroupStartIndex = previousMessageIndex
-                    } else {
-                        break
-                    }
+            for (previousMessageIndex in (history.lastIndex - 1) downTo 0) {
+                val previousMessage = history.getOrNull(previousMessageIndex) ?: break
+                val sameMessage = abs(previousMessage.date - history.last().date) < SAME_MESSAGE_MAX_DELTA_MS
+                if (sameMessage) {
+                    messageGroupStartIndex = previousMessageIndex
+                } else {
+                    break
                 }
             }
+
             if (messageGroupStartIndex != null) {
                 history = history.subList(0, messageGroupStartIndex)
             }
@@ -105,7 +110,7 @@ class TelegramApi(
             history.forEach { message ->
                 val timestamp = message.date.toLong() * 1000
                 val previousPostTimestamp = posts.lastOrNull()?.timestamp ?: 0
-                val previousMessageIsTheSame = abs(previousPostTimestamp - timestamp) < 5000
+                val previousMessageIsTheSame = abs(previousPostTimestamp - timestamp) < SAME_MESSAGE_MAX_DELTA_MS * 1000
                 val content = message.content
                 val (text, image) = when (content) {
                     is TdApi.MessagePhoto -> {

@@ -19,7 +19,6 @@ class ChannelPostsStack(
     private val posts = mutableListOf<ChannelPost>()
 
     private var postsUpdating = coroutineScope.launch {
-        feedRepository.getChannelPosts(channel, 1, 0) // skip first
         updatePostsList(null)
     }
     private var isEmpty = false
