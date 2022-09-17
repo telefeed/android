@@ -1,6 +1,6 @@
 package ru.tgfd.core.feed
 
-import ru.tgfd.core.AsyncImage
+import ru.tgfd.core.model.AsyncImage
 import ru.tgfd.core.model.Channel
 import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.core.model.ChannelPostComment
@@ -28,7 +28,9 @@ class FeedRepositoryStub : FeedRepository {
                     1661979600   // 1 September 2022 12:00 AM
                 ),
                 channel = channel,
-                commentsCount = Random.nextInt(100)
+                commentsCount = Random.nextInt(100),
+                viewsCount = 0,
+                images = emptyList()
             )
         }.sortedByDescending { it.timestamp }
 

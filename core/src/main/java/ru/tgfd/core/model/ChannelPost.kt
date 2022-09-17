@@ -7,4 +7,5 @@ data class ChannelPost(
     val channel: Channel,
     val commentsCount: Int,
     val viewsCount: Int,
+    val images: List<AsyncImage> = emptyList()
 )

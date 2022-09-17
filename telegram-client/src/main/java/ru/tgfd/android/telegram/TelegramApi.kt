@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.drinkless.tdlib.TdApi
-import ru.tgfd.core.AsyncImage
+import ru.tgfd.core.model.AsyncImage
 import ru.tgfd.core.auth.AuthorizationApi
 import ru.tgfd.core.feed.FeedRepository
 import ru.tgfd.core.model.Channel
@@ -88,7 +88,8 @@ class TelegramApi(
             val messages = result.messages
                 .filter { it.isChannelPost }
                 .map { message ->
-                    val text = when (val content = message.content) {
+                    val content = message.content
+                    val text = when (content) {
                         is TdApi.MessagePhoto -> content.caption.text
                         is TdApi.MessageText -> content.text.text
                         is TdApi.MessageVideo -> content.caption.text
@@ -102,7 +103,16 @@ class TelegramApi(
                         timestamp = message.date.toLong(), // TODO: тут дата оригинала, а не репоста
                         channel = channel,
                         commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0,
-                        viewsCount = message.interactionInfo?.viewCount ?: 0
+                        viewsCount = message.interactionInfo?.viewCount ?: 0,
+                        images = if (content is TdApi.MessagePhoto) {
+                            content.photo.sizes.find { it.type == "x" }?.let { file ->
+                                listOf(object : AsyncImage {
+                                    override suspend fun bytes() = telegramFileManager.getImage(file.photo.id)
+                                })
+                            } ?: emptyList()
+                        } else {
+                            emptyList()
+                        }
                     )
                 }
             continuation.resume(messages)

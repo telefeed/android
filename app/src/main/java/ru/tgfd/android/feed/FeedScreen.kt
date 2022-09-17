@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
@@ -31,6 +32,7 @@ import androidx.paging.compose.items
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.R
 import ru.tgfd.android.publication.PostHeader
 import ru.tgfd.ui.state.data.PublicationData
@@ -91,6 +93,15 @@ internal fun FeedScreen(feed: FeedViewModel) {
                         ) {
                             PostHeader(item)
                             Spacer(modifier = Modifier.height(12.dp))
+                            if (item.images.isNotEmpty()) {
+                                NetworkImage(
+                                    asyncImage = item.images.first(),
+                                    modifier = Modifier
+                                        .fillParentMaxWidth(),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
                             ExpandableText(
                                 text = item.text,
                                 minimizedMaxLines = 6
@@ -211,7 +222,9 @@ private fun PostFooter(postData: PublicationData) {
             color = Color(0xFFCECECE),
             fontSize = 14.sp,
             text = postData.viewsCounter.toString(),
-            modifier = Modifier.align(Alignment.TopEnd).padding(end = 26.dp)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 26.dp)
         )
         Image(
             painter = painterResource(R.drawable.ic_baseline_visibility_24),

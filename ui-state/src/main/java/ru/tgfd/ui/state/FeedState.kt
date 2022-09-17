@@ -3,9 +3,7 @@ package ru.tgfd.ui.state
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import ru.tgfd.core.AsyncImage
 import ru.tgfd.core.Calendar
-import ru.tgfd.core.LocalFileProvider
 import ru.tgfd.core.feed.FeedFacade
 import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.ui.state.data.Author
@@ -58,7 +56,8 @@ internal class FeedState(
                     imagesUrls = emptyList(),
                     likesCounter = 0L,
                     commentsCounter = message.commentsCount.toLong(),
-                    viewsCounter = message.viewsCount.toLong()
+                    viewsCounter = message.viewsCount.toLong(),
+                    images = message.images
                 )
             }
 

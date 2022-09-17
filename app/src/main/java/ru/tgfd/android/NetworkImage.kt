@@ -6,10 +6,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import ru.tgfd.core.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import ru.tgfd.core.model.AsyncImage
 
 @Composable
-fun NetworkImage(asyncImage: AsyncImage, modifier: Modifier) {
+fun NetworkImage(
+    asyncImage: AsyncImage,
+    contentDescription: String = "",
+    modifier: Modifier,
+    contentScale: ContentScale = ContentScale.Fit
+) {
 
     var image by remember { mutableStateOf<ImageBitmap?>(null) }
 
@@ -27,8 +33,9 @@ fun NetworkImage(asyncImage: AsyncImage, modifier: Modifier) {
     if (imageBitmap != null) {
         Image(
             bitmap = imageBitmap,
-            "",
-            modifier = modifier
+            contentDescription = contentDescription,
+            modifier = modifier,
+            contentScale = contentScale
         )
     }
 }

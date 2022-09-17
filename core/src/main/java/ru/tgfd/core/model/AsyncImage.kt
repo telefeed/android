@@ -1,4 +1,4 @@
-package ru.tgfd.core
+package ru.tgfd.core.model
 
 interface AsyncImage {
     companion object {

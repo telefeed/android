@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.tgfd.core.AsyncImage
 import ru.tgfd.core.feed.FeedFacade
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.CommentData

@@ -13,13 +13,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.toStringData
-import ru.tgfd.core.AsyncImage
+import ru.tgfd.core.model.AsyncImage
 import ru.tgfd.ui.state.Publication
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.CommentData
@@ -59,6 +60,14 @@ internal fun PublicationScreen(state: Publication) {
             Spacer(modifier = Modifier.height(16.dp))
             PostHeader(state.data)
             Spacer(modifier = Modifier.height(12.dp))
+            if (state.data.images.isNotEmpty()) {
+                NetworkImage(
+                    asyncImage = state.data.images.first(),
+                    modifier = Modifier
+                        .fillParentMaxWidth(),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Text(
                 text = state.data.text,
                 fontSize = 15.sp,
