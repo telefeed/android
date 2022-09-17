@@ -59,15 +59,16 @@ internal fun PublicationScreen(state: Publication) {
         item {
             Spacer(modifier = Modifier.height(16.dp))
             PostHeader(state.data)
-            Spacer(modifier = Modifier.height(12.dp))
-            if (state.data.images.isNotEmpty()) {
+            for (image in state.data.images) {
+                Spacer(modifier = Modifier.height(12.dp))
                 NetworkImage(
-                    asyncImage = state.data.images.first(),
+                    asyncImage = image,
                     modifier = Modifier
                         .fillParentMaxWidth(),
                     contentScale = ContentScale.Crop
                 )
             }
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = state.data.text,
                 fontSize = 15.sp,

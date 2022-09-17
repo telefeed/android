@@ -94,13 +94,28 @@ internal fun FeedScreen(feed: FeedViewModel) {
                             PostHeader(item)
                             Spacer(modifier = Modifier.height(12.dp))
                             if (item.images.isNotEmpty()) {
-                                NetworkImage(
-                                    asyncImage = item.images.first(),
-                                    modifier = Modifier
-                                        .fillParentMaxWidth(),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Row {
+                                    val allImagesHeight = item.images.minOf { it.height }.toFloat()
+                                    val allImagesWidth = item.images.sumOf {
+                                        (it.width * (allImagesHeight / it.height)).toInt()
+                                    }
+                                    for (image in item.images) {
+                                        val newImageWidth =
+                                            image.width * (allImagesHeight / image.height)
+
+                                        NetworkImage(
+                                            asyncImage = image,
+                                            modifier = Modifier
+                                                .fillParentMaxWidth(
+                                                    fraction = newImageWidth / allImagesWidth
+                                                ),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
+                                }
+                                if (item.text.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
                             }
                             ExpandableText(
                                 text = item.text,

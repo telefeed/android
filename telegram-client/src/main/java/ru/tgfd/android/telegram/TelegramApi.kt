@@ -49,7 +49,7 @@ class TelegramApi(
 
                 val channels = deferredChats.mapNotNull { it.await() }
 
-                continuation.resume(channels.filter { it.title.contains("SVTV") })
+                continuation.resume(channels)
             }
         }
     }

@@ -29,8 +29,9 @@ fun PostHeader(postData: PublicationData) {
         Column(modifier = Modifier.padding(PaddingValues(start = 12.dp))) {
             Text(
                 text = postData.author.name,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.DarkGray
             )
             if (postData.author != postData.originalAuthor) {
                 Text(text = "Переслано от ${postData.originalAuthor.name}")
