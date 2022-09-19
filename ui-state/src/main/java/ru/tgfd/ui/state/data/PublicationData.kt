@@ -13,5 +13,6 @@ data class PublicationData(
     val likesCounter: Int,
     val commentsCounter: Int,
     val viewsCounter: Int,
-    val images: List<AsyncImage> = emptyList()
+    val images: List<AsyncImage> = emptyList(),
+    val reactions: List<ReactionData> = emptyList()
 )

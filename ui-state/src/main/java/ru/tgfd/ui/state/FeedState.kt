@@ -8,6 +8,7 @@ import ru.tgfd.core.feed.FeedFacade
 import ru.tgfd.core.model.ChannelPost
 import ru.tgfd.ui.state.data.Author
 import ru.tgfd.ui.state.data.PublicationData
+import ru.tgfd.ui.state.data.ReactionData
 
 internal class FeedState(
     private val postsRepository: FeedFacade,
@@ -57,7 +58,8 @@ internal class FeedState(
                     likesCounter = 0,
                     commentsCounter = message.commentsCount,
                     viewsCounter = message.viewsCount,
-                    images = message.images
+                    images = message.images,
+                    reactions = message.reactions.map { ReactionData(it.value, it.count) }
                 )
             }
 

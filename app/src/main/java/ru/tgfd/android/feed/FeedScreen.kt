@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -22,9 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -232,13 +231,37 @@ private fun ExpandableText(
 
 @Composable
 private fun PostFooter(postData: PublicationData) {
+    val reactionSize = 14.sp
+    val columnOffset = 20.sp
+
     Box(modifier = Modifier.fillMaxSize()) {
+        postData.reactions.onEachIndexed { index, reaction ->
+            Column(
+                modifier = Modifier
+                    .offset(
+                        x = spToDp(columnOffset.times(index))
+                    )
+            ) {
+                Text(
+                    text = reaction.value,
+                    fontSize = reactionSize
+                )
+                Text(
+                    text = reaction.count.toString(),
+                    color = Color(0xFFCECECE),
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+        }
+
         Text(
             color = Color(0xFFCECECE),
             fontSize = 14.sp,
             text = postData.viewsCounter.toString(),
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(Alignment.CenterEnd)
                 .padding(end = 26.dp)
         )
         Image(
@@ -246,7 +269,10 @@ private fun PostFooter(postData: PublicationData) {
             contentDescription = "comments",
             modifier = Modifier
                 .size(18.dp)
-                .align(Alignment.BottomEnd)
+                .align(Alignment.CenterEnd)
         )
     }
 }
+
+@Composable
+fun spToDp(sp: TextUnit) = with(LocalDensity.current) { sp.toDp() }

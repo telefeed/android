@@ -5,13 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.drinkless.tdlib.TdApi
-import ru.tgfd.core.model.AsyncImage
 import ru.tgfd.core.auth.AuthorizationApi
 import ru.tgfd.core.feed.FeedRepository
-import ru.tgfd.core.model.Channel
-import ru.tgfd.core.model.ChannelPost
-import ru.tgfd.core.model.ChannelPostComment
-import ru.tgfd.core.model.Person
+import ru.tgfd.core.model.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.abs
@@ -141,7 +137,10 @@ class TelegramApi(
                     channel = channel,
                     commentsCount = message.interactionInfo?.replyInfo?.replyCount ?: 0,
                     viewsCount = message.interactionInfo?.viewCount ?: 0,
-                    images = images
+                    images = images,
+                    reactions = message.interactionInfo?.reactions?.map {
+                        Reaction(it.reaction, it.totalCount)
+                    } ?: emptyList()
                 )
 
                 if (previousMessageIsTheSame) {
