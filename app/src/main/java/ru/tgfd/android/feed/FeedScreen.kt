@@ -118,9 +118,9 @@ internal fun FeedScreen(feed: FeedViewModel) {
                             }
                             ExpandableText(
                                 text = item.text,
-                                minimizedMaxLines = 6
+                                minimizedMaxLines = 4
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
                             PostFooter(item)
                         }
                     }
@@ -250,7 +250,7 @@ private fun PostFooter(postData: PublicationData) {
                     text = reaction.count.toString(),
                     color = Color(0xFFCECECE),
                     fontSize = 9.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
