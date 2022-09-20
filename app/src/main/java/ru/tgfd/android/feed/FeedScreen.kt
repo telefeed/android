@@ -85,44 +85,38 @@ internal fun FeedScreen(feed: FeedViewModel) {
                             .background(Color.White)
                             .clickable { feed.onSelect(item) },
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth()
-                        ) {
-                            PostHeader(item)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            if (item.images.isNotEmpty()) {
-                                Row {
-                                    val allImagesHeight = item.images.minOf { it.height }.toFloat()
-                                    val allImagesWidth = item.images.sumOf {
-                                        (it.width * (allImagesHeight / it.height)).toInt()
-                                    }
-                                    for (image in item.images) {
-                                        val newImageWidth =
-                                            image.width * (allImagesHeight / image.height)
-
-                                        NetworkImage(
-                                            asyncImage = image,
-                                            modifier = Modifier
-                                                .fillParentMaxWidth(
-                                                    fraction = newImageWidth / allImagesWidth
-                                                ),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    }
+                        PostHeader(item)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        if (item.images.isNotEmpty()) {
+                            Row {
+                                val allImagesHeight = item.images.minOf { it.height }.toFloat()
+                                val allImagesWidth = item.images.sumOf {
+                                    (it.width * (allImagesHeight / it.height)).toInt()
                                 }
-                                if (item.text.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                for (image in item.images) {
+                                    val newImageWidth =
+                                        image.width * (allImagesHeight / image.height)
+
+                                    NetworkImage(
+                                        asyncImage = image,
+                                        modifier = Modifier
+                                            .fillParentMaxWidth(
+                                                fraction = newImageWidth / allImagesWidth
+                                            ),
+                                        contentScale = ContentScale.Crop
+                                    )
                                 }
                             }
-                            ExpandableText(
-                                text = item.text,
-                                minimizedMaxLines = 4
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            PostFooter(item)
+                            if (item.text.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
                         }
+                        ExpandableText(
+                            text = item.text,
+                            minimizedMaxLines = 4,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                        PostFooter(item)
                     }
                 }
             }
@@ -234,7 +228,9 @@ private fun PostFooter(postData: PublicationData) {
     val reactionSize = 14.sp
     val columnOffset = 20.sp
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+    ) {
         postData.reactions.onEachIndexed { index, reaction ->
             Column(
                 modifier = Modifier

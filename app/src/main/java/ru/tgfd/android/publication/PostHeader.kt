@@ -1,6 +1,5 @@
 package ru.tgfd.android.publication
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
@@ -14,12 +13,12 @@ import androidx.compose.ui.unit.sp
 import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.toStringData
 import ru.tgfd.ui.state.data.PublicationData
-import java.text.DateFormat
-import java.util.*
 
 @Composable
 fun PostHeader(postData: PublicationData) {
-    Row {
+    Row(
+        Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+    ) {
         NetworkImage(
             asyncImage = postData.author.avatar,
             modifier = Modifier
