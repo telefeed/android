@@ -2,4 +2,6 @@
     <string name="app_name">TeleFeed</string>
     <string name="login_button_text">Войти</string>
     <string name="title_activity_publication">PublicationActivity</string>
+    <string name="favorites_title">Избранное</string>
+    <string name="experimental_feed_title">Эксперементальный фид</string>
 </resources>

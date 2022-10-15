@@ -6,8 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,12 +33,13 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ru.tgfd.android.NetworkImage
 import ru.tgfd.android.R
+import ru.tgfd.android.Settings
 import ru.tgfd.android.publication.PostHeader
 import ru.tgfd.ui.state.data.PublicationData
 
 
 @Composable
-internal fun FeedScreen(feed: FeedViewModel) {
+internal fun FeedScreen(feed: FeedViewModel, settings: Settings) {
     val shape = RoundedCornerShape(20.dp)
     val publications: LazyPagingItems<PublicationData> =
         feed.publications.collectAsLazyPagingItems()
@@ -61,75 +62,79 @@ internal fun FeedScreen(feed: FeedViewModel) {
 
     val swipeRefreshState = rememberSwipeRefreshState(false)
 
-    SwipeRefresh(
-        state = swipeRefreshState,
-        onRefresh = {
-            swipeRefreshState.isRefreshing = true
-            feed.refresh()
-        },
-    ) {
-        LazyColumn(
-            modifier = Modifier.background(Color(0xFFE7E8ED)),
-            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+
+    Scaffold(drawerContent = { DrawerContent(settings = settings) }) {
+        SwipeRefresh(
+            modifier = Modifier.padding(it),
+            state = swipeRefreshState,
+            onRefresh = {
+                swipeRefreshState.isRefreshing = true
+                feed.refresh()
+            },
         ) {
-            items(items = publications) { itemData ->
+            LazyColumn(
+                modifier = Modifier.background(Color(0xFFE7E8ED)),
+                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(items = publications) { itemData ->
 
-                swipeRefreshState.isRefreshing = false
+                    swipeRefreshState.isRefreshing = false
 
-                itemData?.let { item ->
-                    Column(
-                        modifier = Modifier
-                            .clip(shape)
-                            .fillMaxWidth()
-                            .background(Color.White)
-                            .clickable { feed.onSelect(item) },
-                    ) {
-                        PostHeader(item)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        if (item.images.isNotEmpty()) {
-                            Row {
-                                val allImagesHeight = item.images.minOf { it.height }.toFloat()
-                                val allImagesWidth = item.images.sumOf {
-                                    (it.width * (allImagesHeight / it.height)).toInt()
+                    itemData?.let { item ->
+                        Column(
+                            modifier = Modifier
+                                .clip(shape)
+                                .fillMaxWidth()
+                                .background(Color.White)
+                                .clickable { feed.onSelect(item) },
+                        ) {
+                            PostHeader(item)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            if (item.images.isNotEmpty()) {
+                                Row {
+                                    val allImagesHeight = item.images.minOf { it.height }.toFloat()
+                                    val allImagesWidth = item.images.sumOf {
+                                        (it.width * (allImagesHeight / it.height)).toInt()
+                                    }
+                                    for (image in item.images) {
+                                        val newImageWidth =
+                                            image.width * (allImagesHeight / image.height)
+
+                                        NetworkImage(
+                                            asyncImage = image,
+                                            modifier = Modifier
+                                                .fillParentMaxWidth(
+                                                    fraction = newImageWidth / allImagesWidth
+                                                ),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
                                 }
-                                for (image in item.images) {
-                                    val newImageWidth =
-                                        image.width * (allImagesHeight / image.height)
-
-                                    NetworkImage(
-                                        asyncImage = image,
-                                        modifier = Modifier
-                                            .fillParentMaxWidth(
-                                                fraction = newImageWidth / allImagesWidth
-                                            ),
-                                        contentScale = ContentScale.Crop
-                                    )
+                                if (item.text.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(12.dp))
                                 }
                             }
-                            if (item.text.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
+                            ExpandableText(
+                                text = item.text,
+                                minimizedMaxLines = 4,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            PostFooter(item)
                         }
-                        ExpandableText(
-                            text = item.text,
-                            minimizedMaxLines = 4,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                        PostFooter(item)
                     }
                 }
-            }
-            publications.apply {
-                when {
-                    loadState.refresh is LoadState.Loading -> {
-                        //You can add modifier to manage load state when first time response page is loading
-                    }
-                    loadState.append is LoadState.Loading -> {
-                        //You can add modifier to manage load state when next response page is loading
-                    }
-                    loadState.append is LoadState.Error -> {
-                        //You can use modifier to show error message
+                publications.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            //You can add modifier to manage load state when first time response page is loading
+                        }
+                        loadState.append is LoadState.Loading -> {
+                            //You can add modifier to manage load state when next response page is loading
+                        }
+                        loadState.append is LoadState.Error -> {
+                            //You can use modifier to show error message
+                        }
                     }
                 }
             }
@@ -229,7 +234,9 @@ private fun PostFooter(postData: PublicationData) {
     val columnOffset = 20.sp
 
     Box(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
         postData.reactions.onEachIndexed { index, reaction ->
             Column(

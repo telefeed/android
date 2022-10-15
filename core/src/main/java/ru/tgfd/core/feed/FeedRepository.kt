@@ -14,5 +14,9 @@ interface FeedRepository {
         startMessageId: Long = 0
     ): List<ChannelPost>
 
+    suspend fun getFirstPost(channel: Channel): ChannelPost {
+        return getChannelPosts(channel, 1).first()
+    }
+
     suspend fun getPostComments(channelId: Long, postId: Long): List<ChannelPostComment>
 }

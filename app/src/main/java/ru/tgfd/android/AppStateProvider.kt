@@ -4,4 +4,5 @@ import ru.tgfd.ui.state.UiState
 
 interface AppStateProvider {
     val uiState: UiState
+    val settings: Settings
 }

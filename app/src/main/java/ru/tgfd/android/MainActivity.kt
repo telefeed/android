@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     AuthScreen(state)
                 }
                 is Feed -> setContent {
-                    FeedScreen(feedViewModel)
+                    FeedScreen(feedViewModel, appStateProvider.settings)
                 }
                 is Publication -> {
                     startActivity(Intent(this, PublicationActivity::class.java))
